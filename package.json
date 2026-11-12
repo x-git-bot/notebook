@@ -1,0 +1,7 @@
+{
+  "name": "nothing-notes",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Personal notes: Subjects > Topics > Sub topics (HTML pages). GitHub + Vercel + Upstash Redis.",
+  "engines": { "node": ">=18" }
+}
