@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TOPIC TITLE</title>
+<link href="https://fonts.googleapis.com/css2?family=Doto:wght@900&family=Space+Mono&family=Space+Grotesk:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ===== 1. THEME (Nothing OS) - leave as is ===== */
+:root{--bg:#000;--card:#0b0b0b;--line:#2a2a2a;--tx:#f2f2f2;--mu:#8a8a8a;--red:#d71921;--ok:#f2f2f2}
+*{box-sizing:border-box}
+body{margin:0;background:#000;color:var(--tx);font-family:'Space Grotesk',system-ui,sans-serif;line-height:1.6}
+body::before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(#1b1b1b 1px,transparent 1.2px) 0 0/18px 18px}
+main{max-width:720px;margin:0 auto;padding:20px 16px 80px}
+h1,h2{font-family:'Doto','Space Mono',monospace;font-weight:900;margin:0 0 10px}
+h1{font-size:38px;line-height:1.05}h2{font-size:24px}
+.label{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu)}
+.note,.q{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px 18px;margin:12px 0}
+.note li{margin:4px 0}.note table{border-collapse:collapse;width:100%}
+.note td,.note th{border:1px solid var(--line);padding:6px 8px;text-align:left;font-size:14px}
+.red{color:var(--red)}
+#bar{display:flex;gap:14px;font-family:'Space Mono',monospace;font-size:12px;margin:10px 0}
+.q p{margin:6px 0 10px;font-size:17px}
+.q button{display:block;width:100%;text-align:left;margin:6px 0;padding:11px 14px;background:#000;color:var(--tx);border:1px solid var(--line);border-radius:14px;font:inherit;font-size:15px}
+.q button.right{border-color:var(--tx);background:var(--tx);color:#000}
+.q button.wrong{border-color:var(--red);color:var(--red)}
+.ex{margin-top:8px;font-size:14px;color:var(--mu);border-top:1px dashed var(--line);padding-top:8px}
+.tabs button{background:none;border:1px solid var(--line);color:var(--tx);border-radius:999px;padding:8px 16px;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-right:6px}
+</style>
+</head>
+<body>
+<main>
+
+<!-- ===== 2. TITLE ===== -->
+<header>
+  <div class="label">SUBJECT › TOPIC</div>
+  <h1>Sub topic title<span class="red">.</span></h1>
+</header>
+
+<!-- ===== 3. NOTES: one <section class="note"> per concept. Copy, edit or delete a whole block. ===== -->
+<section class="note">
+  <h2>Concept 1</h2>
+  <ul>
+    <li>Key point</li>
+    <li>Key point</li>
+  </ul>
+</section>
+
+<section class="note">
+  <h2>Concept 2</h2>
+  <table>
+    <tr><th>Term</th><th>Meaning</th></tr>
+    <tr><td>A</td><td>...</td></tr>
+  </table>
+</section>
+
+<!-- ===== 4. QUIZ AREA - leave as is ===== -->
+<div class="label" style="margin-top:28px">Practice</div>
+<div id="bar"></div>
+<div class="tabs"><button data-f="all">All</button><button data-f="wrong">Wrong only</button></div>
+<div id="qs"></div>
+
+</main>
+
+<script>
+/* ===== 5. MCQ DATA: one line = one question. Add / delete lines freely.
+   id   : unique and never changed (progress is saved against it)
+   o    : exactly 4 options
+   a    : index of the correct option (0, 1, 2 or 3)
+   e    : short explanation ===== */
+const MCQS = [
+  {id:'q1', q:'Question text?', o:['Option A','Option B','Option C','Option D'], a:0, e:'Why A is correct.'},
+  {id:'q2', q:'Question text?', o:['Option A','Option B','Option C','Option D'], a:2, e:'Why C is correct.'},
+];
+
+/* ===== 6. ENGINE - leave as is ===== */
+if(!window.NP){window.NP=(function(){var s={};return{data:function(){return s},record:function(id,ok){var a=s[id]||(s[id]={c:0,w:0});ok?a.c++:a.w++;a.last=ok},onReady:function(f){f()}}})()}
+const $=s=>document.querySelector(s); let filter='all';
+function bar(){let c=0,w=0,d=NP.data();for(const k in d){c+=d[k].c;w+=d[k].w}
+  $('#bar').innerHTML=`<span>Correct ${c}</span><span>Wrong ${w}</span><span>${c+w?Math.round(c/(c+w)*100):0}%</span>`}
+function render(){const d=NP.data();bar();
+  const list=MCQS.filter(m=>filter==='all'||(d[m.id]&&d[m.id].last===false));
+  $('#qs').innerHTML=list.map(m=>{const r=d[m.id];return `<div class="q"><div class="label">Q${MCQS.indexOf(m)+1}${r?` · last ${r.last?'correct':'wrong'} · ${r.c}/${r.c+r.w}`:''}</div><p>${m.q}</p>${m.o.map((o,j)=>`<button data-q="${m.id}" data-j="${j}">${o}</button>`).join('')}<div class="ex" hidden>${m.e||''}</div></div>`}).join('')||'<p class="label">Nothing here yet</p>'}
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-f]');if(t){filter=t.dataset.f;return render()}
+  const b=e.target.closest('button[data-q]');if(!b)return;const card=b.closest('.q');if(card.dataset.done)return;
+  const m=MCQS.find(x=>x.id===b.dataset.q),j=+b.dataset.j,ok=j===m.a;card.dataset.done=1;NP.record(m.id,ok);
+  card.querySelectorAll('button').forEach((x,k)=>{if(k===m.a)x.classList.add('right');else if(k===j)x.classList.add('wrong')});
+  card.querySelector('.ex').hidden=false;bar()});
+NP.onReady(render);
+</script>
+</body>
+</html>

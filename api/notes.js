@@ -7,6 +7,7 @@ const PASSWORD = process.env.APP_PASSWORD;
 
 const TREE_KEY = 'notes:tree';
 const pageKey = id => 'notes:page:' + id;
+const progKey = id => 'notes:progress:' + id;
 const validId = id => typeof id === 'string' && /^[a-z0-9_-]{1,40}$/i.test(id);
 
 async function redis(cmd) {
@@ -69,9 +70,24 @@ module.exports = async (req, res) => {
         return res.json({ ok: true });
       }
 
+      case 'getProgress': {
+        if (!validId(body.id)) return res.status(400).json({ error: 'Bad id' });
+        const raw = await redis(['GET', progKey(body.id)]);
+        return res.json({ data: raw ? JSON.parse(raw) : {} });
+      }
+
+      case 'saveProgress': {
+        if (!validId(body.id) || typeof body.data !== 'object' || !body.data)
+          return res.status(400).json({ error: 'Bad request' });
+        const str = JSON.stringify(body.data);
+        if (str.length > 500_000) return res.status(413).json({ error: 'Progress too large' });
+        await redis(['SET', progKey(body.id), str]);
+        return res.json({ ok: true });
+      }
+
       case 'deletePages': {
         const ids = (body.ids || []).filter(validId);
-        if (ids.length) await redis(['DEL', ...ids.map(pageKey)]);
+        if (ids.length) await redis(['DEL', ...ids.map(pageKey), ...ids.map(progKey)]);
         return res.json({ ok: true });
       }
 

@@ -1,5 +1,5 @@
-const CACHE = 'notes-shell-v1';
-const SHELL = ['/', '/index.html', '/manifest.json'];
+const CACHE = 'notes-shell-v2';
+const SHELL = ['/', '/index.html', '/manifest.json', '/template.html'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
 });
