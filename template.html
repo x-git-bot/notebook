@@ -77,17 +77,17 @@ const MCQS = [
 if(!window.NP){window.NP=(function(){var s={};return{data:function(){return s},record:function(id,ok){var a=s[id]||(s[id]={c:0,w:0});ok?a.c++:a.w++;a.last=ok},onReady:function(f){f()}}})()}
 const $=s=>document.querySelector(s); let filter='all';
 function bar(){let c=0,w=0,d=NP.data();for(const k in d){c+=d[k].c;w+=d[k].w}
-  $('#bar').innerHTML=`<span>Correct ${c}</span><span>Wrong ${w}</span><span>${c+w?Math.round(c/(c+w)*100):0}%</span>`}
+  $('#bar').innerHTML=`<span>Answered ${Object.keys(d).length}/${MCQS.length}</span><span>Correct ${c}</span><span>Wrong ${w}</span><span>${c+w?Math.round(c/(c+w)*100):0}%</span>`}
 function render(){const d=NP.data();bar();
   const list=MCQS.filter(m=>filter==='all'||(d[m.id]&&d[m.id].last===false));
-  $('#qs').innerHTML=list.map(m=>{const r=d[m.id];return `<div class="q"><div class="label">Q${MCQS.indexOf(m)+1}${r?` · last ${r.last?'correct':'wrong'} · ${r.c}/${r.c+r.w}`:''}</div><p>${m.q}</p>${m.o.map((o,j)=>`<button data-q="${m.id}" data-j="${j}">${o}</button>`).join('')}<div class="ex" hidden>${m.e||''}</div></div>`}).join('')||'<p class="label">Nothing here yet</p>'}
+  $('#qs').innerHTML=list.map(m=>{const r=d[m.id],ans=r&&filter==='all';return `<div class="q" ${ans?'data-done=1':''}><div class="label">Q${MCQS.indexOf(m)+1}${r?` · last ${r.last?'correct':'wrong'} · ${r.c}/${r.c+r.w}`:''}</div><p>${m.q}</p>${m.o.map((o,j)=>`<button class="${ans?(j===m.a?'right':(j===r.p?'wrong':'')):''}" data-q="${m.id}" data-j="${j}">${o}</button>`).join('')}<div class="ex" ${ans?'':'hidden'}>${m.e||''}</div></div>`}).join('')||'<p class="label">Nothing here yet</p>'}
 document.addEventListener('click',e=>{
   const t=e.target.closest('[data-f]');if(t){filter=t.dataset.f;return render()}
   const b=e.target.closest('button[data-q]');if(!b)return;const card=b.closest('.q');if(card.dataset.done)return;
-  const m=MCQS.find(x=>x.id===b.dataset.q),j=+b.dataset.j,ok=j===m.a;card.dataset.done=1;NP.record(m.id,ok);
+  const m=MCQS.find(x=>x.id===b.dataset.q),j=+b.dataset.j,ok=j===m.a;card.dataset.done=1;NP.record(m.id,ok,j);
   card.querySelectorAll('button').forEach((x,k)=>{if(k===m.a)x.classList.add('right');else if(k===j)x.classList.add('wrong')});
   card.querySelector('.ex').hidden=false;bar()});
-NP.onReady(render);
+NP.onReady(()=>{render();const f=document.querySelector('.q:not([data-done])');if(f&&Object.keys(NP.data()).length)f.scrollIntoView({block:'center'})});
 </script>
 </body>
 </html>
