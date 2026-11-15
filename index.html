@@ -103,11 +103,33 @@ iframe.full{position:fixed;left:0;right:0;bottom:0;top:calc(52px + env(safe-area
 .box textarea{width:100%;background:#000;border:1px solid var(--line2);border-radius:14px;padding:12px;color:var(--tx);font-family:var(--mono);font-size:13px;margin-bottom:14px;outline:none;resize:vertical}
 .box textarea:focus{border-color:var(--red)}
 .pr-t{color:var(--mu);font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.boot{font-family:var(--mono);color:var(--mu);text-align:center;padding:38vh 20px 0;letter-spacing:1px;font-size:12px;line-height:1.6}
 </style>
 </head>
 <body>
-<div id="app"></div>
+<div id="app"><div class="boot">LOADING… · build 7</div></div>
 
+<script>
+(function () {
+  var a = document.getElementById('app');
+  window.nnReset = function () {
+    var jobs = [];
+    if (navigator.serviceWorker) jobs.push(navigator.serviceWorker.getRegistrations().then(function (r) { return Promise.all(r.map(function (x) { return x.unregister(); })); }));
+    if (window.caches) jobs.push(caches.keys().then(function (k) { return Promise.all(k.map(function (x) { return caches.delete(x); })); }));
+    Promise.all(jobs).catch(function () {}).then(function () {
+      try { indexedDB.deleteDatabase('nn'); } catch (e) {}
+      setTimeout(function () { location.reload(); }, 600);
+    });
+  };
+  function fail(m) {
+    if (!a || a.getAttribute('data-ok') === '1') return;
+    a.innerHTML = '<div class="boot">' + String(m).replace(/</g, '&lt;') + '<br><br><button onclick="nnReset()" style="background:#f2f2f2;color:#000;border:0;border-radius:999px;padding:10px 20px;font:12px monospace">Reset app cache &amp; reload</button></div>';
+  }
+  window.addEventListener('error', function (e) { fail('Error: ' + (e.message || 'unknown')); });
+  window.addEventListener('unhandledrejection', function (e) { fail('Error: ' + ((e.reason && e.reason.message) || e.reason)); });
+  setTimeout(function () { fail('The app did not start (build 7).'); }, 6000);
+})();
+</script>
 <script>
 const app = document.getElementById('app');
 let pass = localStorage.getItem('nn_pass') || '';
@@ -173,7 +195,7 @@ window.addEventListener('message', e => {
 });
 
 /* ---------- offline: local database (IndexedDB) ---------- */
-const idb = new Promise(res => { try { const r = indexedDB.open('nn', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => res(null); } catch { res(null); } });
+const idb = new Promise(res => { try { const r = indexedDB.open('nn', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => res(null); } catch { res(null); } setTimeout(() => res(null), 1500); });
 const idbGet = k => idb.then(db => db ? new Promise(res => { const q = db.transaction('kv').objectStore('kv').get(k); q.onsuccess = () => res(q.result); q.onerror = () => res(undefined); }) : undefined);
 const idbSet = (k, v) => idb.then(db => db ? new Promise(res => { const t = db.transaction('kv', 'readwrite'); t.objectStore('kv').put(v, k); t.oncomplete = () => res(); t.onerror = () => res(); }) : undefined);
 
@@ -287,6 +309,7 @@ const subIdsOfSubject = s => s.topics.flatMap(subIdsOfTopic);
 /* ---------- views ---------- */
 const sha = async s => (window.crypto && crypto.subtle) ? [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode('nn:' + s)))].map(b => b.toString(16).padStart(2, '0')).join('') : 'p:' + s;
 function viewLogin(err = '') {
+  app.dataset.ok = '1';
   app.innerHTML = `<div class="login">
     <div class="logo">NOTES<i></i></div>
     <div class="label" style="margin-bottom:28px">Private vault</div>
@@ -760,6 +783,7 @@ app.addEventListener('click', e => {
 
 /* ---------- router ---------- */
 function route() {
+  app.dataset.ok = '1';
   if (!pass) return viewLogin();
   const [, k, id] = (location.hash.slice(1) || '/').split('/');
   flush(); cur = null;
