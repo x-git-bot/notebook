@@ -406,7 +406,7 @@ async function viewEditor(id) {
     ed.value = r.html; toast(`Embedded ${r.n} file${r.n === 1 ? '' : 's'}${r.bad ? ', ' + r.bad + ' failed' : ''}`);
   };
   document.getElementById('an').onclick = () => {
-    const i = ed.value.indexOf('<!-- ===== 4.'); if (i < 0) return toast('Needs the template layout');
+    const i = ed.value.indexOf('\x3C!-- ===== 4.'); if (i < 0) return toast('Needs the template layout');
     insertAt(i, '<section class="note">\n  <h2>New concept</h2>\n  <ul>\n    <li>Point</li>\n  </ul>\n</section>\n\n'); toast('Note block added');
   };
   document.getElementById('aq').onclick = () => {
