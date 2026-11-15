@@ -6,6 +6,7 @@ const TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TO
 const PASSWORD = process.env.APP_PASSWORD;
 
 const TREE_KEY = 'notes:tree';
+const PROMPTS_KEY = 'notes:prompts';
 const pageKey = id => 'notes:page:' + id;
 const progKey = id => 'notes:progress:' + id;
 const validId = id => typeof id === 'string' && /^[a-z0-9_-]{1,40}$/i.test(id);
@@ -52,6 +53,19 @@ module.exports = async (req, res) => {
         if (!body.tree || !Array.isArray(body.tree.subjects))
           return res.status(400).json({ error: 'Bad tree' });
         await redis(['SET', TREE_KEY, JSON.stringify(body.tree)]);
+        return res.json({ ok: true });
+      }
+
+      case 'getPrompts': {
+        const raw = await redis(['GET', PROMPTS_KEY]);
+        return res.json({ prompts: raw ? JSON.parse(raw) : [] });
+      }
+
+      case 'savePrompts': {
+        if (!Array.isArray(body.prompts)) return res.status(400).json({ error: 'Bad prompts' });
+        const str = JSON.stringify(body.prompts);
+        if (str.length > 400_000) return res.status(413).json({ error: 'Too large' });
+        await redis(['SET', PROMPTS_KEY, str]);
         return res.json({ ok: true });
       }
 

@@ -93,6 +93,16 @@ iframe.pv{width:100%;height:60dvh;border:1px solid var(--line2);border-radius:18
 iframe.full{position:fixed;left:0;right:0;bottom:0;top:calc(52px + env(safe-area-inset-top));width:100%;height:calc(100dvh - 52px - env(safe-area-inset-top));border:0;background:#fff}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--tx);color:#000;font-family:var(--mono);font-size:12px;padding:10px 18px;border-radius:999px;z-index:60}
 .sync{font-family:var(--mono);font-size:10px;color:var(--mu)}
+.grip{touch-action:none;cursor:grab;width:28px;color:var(--line2)}
+.dragging{opacity:.55;outline:1px dashed var(--red);user-select:none}
+.subs{min-height:14px}
+.dot.st-revision{background:var(--red);border-color:var(--red)}.dot.st-completed{background:var(--tx);border-color:var(--tx)}
+.chip.st{border-color:var(--red)}
+.seg{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}.btn.on{background:var(--tx);color:#000}
+.box{max-height:90dvh;overflow:auto}
+.box textarea{width:100%;background:#000;border:1px solid var(--line2);border-radius:14px;padding:12px;color:var(--tx);font-family:var(--mono);font-size:13px;margin-bottom:14px;outline:none;resize:vertical}
+.box textarea:focus{border-color:var(--red)}
+.pr-t{color:var(--mu);font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
 </style>
 </head>
 <body>
@@ -112,7 +122,7 @@ function toast(m) {
   document.body.appendChild(t); setTimeout(() => t.remove(), 2200);
 }
 
-const I={edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>',power:'<path d="M12 3v9M6.3 7.5a8 8 0 1 0 11.4 0"/>',cal:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',back:'<path d="M15 5l-7 7 7 7"/>',reset:'<path d="M4 12a8 8 0 1 1 3 6.2M4 19v-5h5"/>',l:'<path d="M15 5l-7 7 7 7"/>',r:'<path d="M9 5l7 7-7 7"/>'};
+const I={edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>',power:'<path d="M12 3v9M6.3 7.5a8 8 0 1 0 11.4 0"/>',cal:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',back:'<path d="M15 5l-7 7 7 7"/>',reset:'<path d="M4 12a8 8 0 1 1 3 6.2M4 19v-5h5"/>',grip:'<circle cx="9" cy="6" r="1.2"/><circle cx="15" cy="6" r="1.2"/><circle cx="9" cy="12" r="1.2"/><circle cx="15" cy="12" r="1.2"/><circle cx="9" cy="18" r="1.2"/><circle cx="15" cy="18" r="1.2"/>',dl:'<path d="M12 4v11M7 11l5 5 5-5M5 20h14"/>',l:'<path d="M15 5l-7 7 7 7"/>',r:'<path d="M9 5l7 7-7 7"/>'};
 const ic = n => `<svg class="si" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${I[n]}</svg>`;
 const pad = n => String(n).padStart(2, '0');
 const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -123,14 +133,14 @@ const INT = [1, 3, 7, 21, 45]; // spaced repetition gaps (days after study date)
 function tasks() {
   const out = [];
   tree.subjects.forEach(s => s.topics.forEach(t => t.subs.forEach(x => {
-    if (!x.date) return;
+    if (x.status !== 'revision' || !x.date) return;
     INT.forEach((n, i) => { const due = addDays(x.date, n); out.push({ s, t, x, due, r: i + 1, done: (x.done || []).includes(due) }); });
   })));
   return out;
 }
 
 /* ---- MCQ progress bridge: pages talk to the server through NP ---- */
-const HELPER = '<script>(function(){var s={},rs=[];window.NP={loaded:false,data:function(){return s},record:function(id,ok,p){var a=s[id]||(s[id]={c:0,w:0});ok?a.c++:a.w++;a.last=!!ok;a.p=p;a.t=Date.now();parent.postMessage({np:"rec",id:id,ok:!!ok,p:p},"*");return a},onReady:function(f){rs.push(f);if(NP.loaded)f()}};addEventListener("message",function(e){if(e.data&&e.data.np==="init"){s=e.data.data||{};NP.loaded=true;rs.forEach(function(f){f()})}});parent.postMessage({np:"hello"},"*")})()<\/script>';
+const HELPER = '<script>(function(){var s={},rs=[];window.NP={loaded:false,data:function(){return s},record:function(id,ok,p){var a=s[id]||(s[id]={c:0,w:0});ok?a.c++:a.w++;a.last=!!ok;a.p=p;a.t=Date.now();parent.postMessage({np:"rec",id:id,ok:!!ok,p:p},"*");return a},onReady:function(f){rs.push(f);if(NP.loaded)f()}};addEventListener("message",function(e){if(e.data&&e.data.np==="init"){s=e.data.data||{};if(e.data.css){var st=document.createElement("style");st.textContent=e.data.css;(document.head||document.documentElement).appendChild(st)}NP.loaded=true;rs.forEach(function(f){f()})}});parent.postMessage({np:"hello"},"*")})()<\/script>';
 const wrap = h => /<head[^>]*>/i.test(h) ? h.replace(/<head[^>]*>/i, m => m + HELPER) : HELPER + h;
 let cur = null, saveT = null, pending = null;
 function sums(p) { let c = 0, w = 0; for (const k in p) { c += p[k].c || 0; w += p[k].w || 0; } return { c, w }; }
@@ -144,7 +154,7 @@ async function doSave() {
 }
 function beacon() {
   if (!saveT || !pending || !pending.save) return;
-  clearTimeout(saveT); saveT = null;
+  clearTimeout(saveT); saveT = null; queue('saveProgress', { id: pending.id, data: pending.prog });
   fetch('/api/notes', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json', 'x-password': pass },
     body: JSON.stringify({ action: 'saveProgress', id: pending.id, data: pending.prog }) }).catch(() => {});
 }
@@ -154,15 +164,21 @@ function flush() { if (saveT) { clearTimeout(saveT); doSave(); } }
 window.addEventListener('message', e => {
   const m = e.data; if (!m || !m.np || !cur) return;
   const fr = document.getElementById(cur.frame); if (!fr || e.source !== fr.contentWindow) return;
-  if (m.np === 'hello') return fr.contentWindow.postMessage({ np: 'init', data: cur.prog }, '*');
+  if (m.np === 'hello') return fr.contentWindow.postMessage({ np: 'init', data: cur.prog, css: fontCss }, '*');
   if (m.np === 'rec') {
     const a = cur.prog[m.id] || (cur.prog[m.id] = { c: 0, w: 0 });
     m.ok ? a.c++ : a.w++; a.last = !!m.ok; a.p = m.p; a.t = Date.now(); updStat();
-    if (cur.save) { pending = cur; clearTimeout(saveT); saveT = setTimeout(doSave, 150); }
+    if (cur.save) { idbSet('prog:' + cur.id, { data: cur.prog }); pending = cur; clearTimeout(saveT); saveT = setTimeout(doSave, 150); }
   }
 });
 
-async function api(action, data = {}) {
+/* ---------- offline: local database (IndexedDB) ---------- */
+const idb = new Promise(res => { try { const r = indexedDB.open('nn', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => res(null); } catch { res(null); } });
+const idbGet = k => idb.then(db => db ? new Promise(res => { const q = db.transaction('kv').objectStore('kv').get(k); q.onsuccess = () => res(q.result); q.onerror = () => res(undefined); }) : undefined);
+const idbSet = (k, v) => idb.then(db => db ? new Promise(res => { const t = db.transaction('kv', 'readwrite'); t.objectStore('kv').put(v, k); t.oncomplete = () => res(); t.onerror = () => res(); }) : undefined);
+
+/* ---------- API with offline cache + outbox ---------- */
+async function rawApi(action, data = {}) {
   const r = await fetch('/api/notes', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-password': pass },
@@ -170,8 +186,73 @@ async function api(action, data = {}) {
   });
   const j = await r.json().catch(() => ({}));
   if (r.status === 401) { const e = new Error('Wrong password'); e.auth = true; throw e; }
-  if (!r.ok) throw new Error(j.error || 'Server error');
+  if (!r.ok) { const e = new Error(j.error || 'Server error'); e.server = true; throw e; }
   return j;
+}
+const RK = { getTree: () => 'tree', getPrompts: () => 'prompts', getProgress: d => 'prog:' + d.id };
+const qk = (a, d) => a + ':' + (d.id || '');
+let warned = false, offTxt = '';
+async function queue(action, data) { const o = (await idbGet('outbox')) || {}; o[qk(action, data)] = { action, data }; await idbSet('outbox', o); setOff(); }
+async function unqueue(action, data) { const o = await idbGet('outbox'); const k = qk(action, data); if (o && o[k]) { delete o[k]; await idbSet('outbox', o); } }
+function setOff(t) {
+  if (t !== undefined) offTxt = t;
+  idbGet('outbox').then(o => {
+    const n = o ? Object.keys(o).length : 0, el = document.getElementById('off');
+    if (el) el.textContent = (navigator.onLine ? '' : 'OFFLINE · ') + offTxt + (n ? ` · ${n} to sync` : '');
+  });
+}
+async function api(action, data = {}) {
+  // keep a local copy of everything written, so offline reads match
+  if (action === 'saveTree') await idbSet('tree', { tree: data.tree });
+  else if (action === 'savePrompts') await idbSet('prompts', { prompts: data.prompts });
+  else if (action === 'saveProgress') await idbSet('prog:' + data.id, { data: data.data });
+  else if (action === 'savePage') await idbSet('page:' + data.id, { html: data.html, v: data.v || 0 });
+  try {
+    const j = await rawApi(action, data);
+    if (RK[action]) idbSet(RK[action](data), j);
+    if (action.startsWith('save')) unqueue(action, data);
+    warned = false; return j;
+  } catch (e) {
+    if (e.auth || e.server) throw e;
+    if (RK[action]) { const c = await idbGet(RK[action](data)); if (c) return c; }
+    if (action.startsWith('save')) {
+      await queue(action, data);
+      if (!warned) { warned = true; toast('Offline: saved on this device, will sync later'); }
+      return { ok: true, queued: true };
+    }
+    throw new Error('Offline');
+  }
+}
+let flushing = false;
+async function flushOutbox() {
+  if (flushing) return; flushing = true;
+  try {
+    const o = await idbGet('outbox'); if (!o) return;
+    for (const k of Object.keys(o)) {
+      try { await rawApi(o[k].action, o[k].data); }
+      catch (e) { if (!e.server) break; }
+      const c = (await idbGet('outbox')) || {}; delete c[k]; await idbSet('outbox', c);
+    }
+  } finally { flushing = false; setOff(); }
+}
+/* page HTML: cached on the phone, re-downloaded only when its version changes */
+async function loadPage(id) {
+  const f = findSub(id), v = (f && f.x.v) || 0, c = await idbGet('page:' + id);
+  if (c && (c.v || 0) === v) return c.html;
+  try { const j = await api('getPage', { id }); await idbSet('page:' + id, { html: j.html, v }); return j.html; }
+  catch (e) { if (c) return c.html; throw e; }
+}
+let pf = false;
+async function prefetchAll() {
+  if (pf || !navigator.onLine) return; pf = true;
+  const subs = tree.subjects.flatMap(s => s.topics.flatMap(t => t.subs)).filter(x => x.locked);
+  let n = 0, bad = 0; setOff(`Saving offline 0/${subs.length}`);
+  for (let i = 0; i < subs.length; i += 3)
+    await Promise.all(subs.slice(i, i + 3).map(async x => {
+      try { await loadPage(x.id); await api('getProgress', { id: x.id }); } catch { bad++; }
+      setOff(`Saving offline ${++n}/${subs.length}`);
+    }));
+  pf = false; setOff(bad ? `Offline: ${bad} missing` : `Offline ready · ${subs.length}`);
 }
 
 async function persist() {
@@ -204,6 +285,7 @@ const subIdsOfTopic = t => t.subs.map(x => x.id);
 const subIdsOfSubject = s => s.topics.flatMap(subIdsOfTopic);
 
 /* ---------- views ---------- */
+const sha = async s => (window.crypto && crypto.subtle) ? [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode('nn:' + s)))].map(b => b.toString(16).padStart(2, '0')).join('') : 'p:' + s;
 function viewLogin(err = '') {
   app.innerHTML = `<div class="login">
     <div class="logo">NOTES<i></i></div>
@@ -213,9 +295,17 @@ function viewLogin(err = '') {
     <button class="btn" id="go">Unlock</button></div>`;
   const pw = document.getElementById('pw');
   const submit = async () => {
-    pass = pw.value;
-    try { await api('ping'); localStorage.setItem('nn_pass', pass); await boot(); }
-    catch (e) { pass = ''; document.getElementById('er').textContent = e.message; }
+    const typed = pw.value, er = document.getElementById('er'); er.textContent = ''; pass = typed;
+    try {
+      await rawApi('ping');
+      localStorage.setItem('nn_pass', pass); await idbSet('auth', { pass, hash: await sha(pass) }); await boot();
+    } catch (e) {
+      pass = '';
+      if (e.auth || e.server) return (er.textContent = e.message);
+      const a = await idbGet('auth');   // no internet: check against the login saved on this phone
+      if (a && a.hash && a.hash === await sha(typed)) { pass = typed; localStorage.setItem('nn_pass', pass); await idbSet('auth', { pass, hash: a.hash }); await boot(); }
+      else er.textContent = a && a.hash ? 'Wrong password' : 'No internet. Sign in once online on this phone.';
+    }
   };
   document.getElementById('go').onclick = submit;
   pw.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
@@ -226,93 +316,113 @@ function viewHome() {
   const dueN = tasks().filter(k => !k.done && k.due <= today()).length;
   const list = tree.subjects.map(s => {
     const n = subIdsOfSubject(s).length;
-    return `<div class="card subj" data-a="openSubject" data-id="${s.id}">
+    return `<div class="card subj drag-item" data-type="subject" data-a="openSubject" data-id="${s.id}">
+      <button class="ic grip" data-a="noop">${ic('grip')}</button>
       <span class="nm">${esc(s.name)}</span>
       <span class="ct">${s.topics.length}T · ${n}S</span>
       <button class="ic" data-a="renSubject" data-id="${s.id}">${ic('edit')}</button>
       <button class="ic" data-a="delSubject" data-id="${s.id}">${ic('x')}</button></div>`;
   }).join('');
+  const pr = prompts.map(p => `<div class="card pr">
+    <div class="topic-h"><span class="nm" style="font-size:19px">${esc(p.title)}</span>
+      <button class="ic" data-a="editPrompt" data-id="${p.id}">${ic('edit')}</button>
+      <button class="ic" data-a="delPrompt" data-id="${p.id}">${ic('x')}</button></div>
+    <div class="pr-t">${esc(p.text.slice(0, 150))}</div>
+    <div class="row" style="justify-content:flex-start;margin-top:10px">
+      <button class="btn ghost mini" data-a="copyPrompt" data-id="${p.id}">Copy</button>
+      <button class="btn ghost mini" data-a="copyPromptTpl" data-id="${p.id}">Copy + template</button></div></div>`).join('');
   app.innerHTML = `<div class="wrap">
     <div class="top"><div class="logo">NOTES<i></i></div>
-      <button class="ic" data-a="logout" title="Lock">${ic('power')}</button></div>
+      <div style="display:flex;align-items:center;gap:6px"><span class="sync" id="off" data-a="prefetch"></span>
+      <button class="ic" data-a="logout" title="Lock">${ic('power')}</button></div></div>
     <div class="card rev" data-a="rev"><span class="big">${dueN}</span><span class="nm">Today’s revision</span>${ic('cal')}</div>
     <div class="label" style="margin:18px 0 12px">Subjects</div>
-    ${list || `<div class="empty">NO SUBJECTS YET<br>TAP + TO ADD ONE</div>`}
-    <button class="add" data-a="addSubject">+ Add subject</button></div>`;
+    ${list ? `<div data-box="subject">${list}</div>` : `<div class="empty">NO SUBJECTS YET</div>`}
+    <button class="add" data-a="addSubject">+ Add subject</button>
+    <div class="label" style="margin:28px 0 12px">Prompts</div>
+    ${pr}
+    <button class="add" data-a="addPrompt">+ Add prompt</button>
+    <button class="add" style="margin-top:28px" data-a="backup">${ic('dl')}<span style="display:inline-block;margin-left:8px">Download full backup</span></button>
+    <button class="add" data-a="restore">Restore from backup file</button></div>`;
+  setOff();
 }
+
+const stLabel = x => x.status === 'completed' ? 'Completed' : x.status === 'revision' ? 'Revision' + (x.date ? ' · ' + fmt(x.date) : '') : 'Not started';
 
 function viewSubject(sid) {
   const s = findSubject(sid); if (!s) return go('/');
-  const topics = s.topics.map(t => `<div class="card">
-    <div class="topic-h"><span class="nm">${esc(t.name)}</span>
+  const topics = s.topics.map(t => `<div class="card drag-item" data-type="topic" data-id="${t.id}">
+    <div class="topic-h"><button class="ic grip" data-a="noop">${ic('grip')}</button><span class="nm">${esc(t.name)}</span>
       <button class="ic" data-a="renTopic" data-id="${t.id}">${ic('edit')}</button>
       <button class="ic" data-a="delTopic" data-id="${t.id}">${ic('x')}</button></div>
-    ${t.subs.map(x => `<div class="sub" data-a="openSub" data-id="${x.id}">
-      <span class="dot ${x.locked ? 'on' : ''}"></span><div class="nm">${esc(x.name)}<small><span class="chip" data-a="setDate" data-id="${x.id}">${x.date ? fmt(x.date) : '+ date'}</span>${x.stats && (x.stats.c + x.stats.w) ? `<span>Right ${x.stats.c} · Wrong ${x.stats.w}</span>` : ''}</small></div>
-      <span class="tag">${x.locked ? 'Open' : 'Edit'}</span>
+    <div class="subs" data-box="sub">${t.subs.map(x => `<div class="sub drag-item" data-type="sub" data-id="${x.id}" data-a="openSub">
+      <button class="ic grip" data-a="noop">${ic('grip')}</button>
+      <span class="dot st-${x.status}"></span><div class="nm">${esc(x.name)}<small><span class="chip" data-a="setStatus" data-id="${x.id}">${stLabel(x)}</span>${x.stats && (x.stats.c + x.stats.w) ? `<span>Right ${x.stats.c} · Wrong ${x.stats.w}</span>` : ''}</small></div>
       <button class="ic" data-a="renSub" data-id="${x.id}">${ic('edit')}</button>
-      <button class="ic" data-a="delSub" data-id="${x.id}">${ic('x')}</button></div>`).join('')}
+      <button class="ic" data-a="delSub" data-id="${x.id}">${ic('x')}</button></div>`).join('')}</div>
     <button class="add" data-a="addSub" data-id="${t.id}">+ Add sub topic</button></div>`).join('');
   app.innerHTML = `<div class="wrap">
     <button class="back" data-a="home">← Subjects</button>
     <div class="label">Subject</div><h1 class="t">${esc(s.name)}</h1>
+    <button class="btn ghost mini" style="margin-top:8px" data-a="dlSubject" data-id="${s.id}">Download subject</button>
     <div class="label" style="margin:18px 0 12px">Topics</div>
-    ${topics || `<div class="empty">NO TOPICS YET</div>`}
+    ${s.topics.length ? `<div data-box="topic">${topics}</div>` : `<div class="empty">NO TOPICS YET</div>`}
     <button class="add" data-a="addTopic" data-id="${s.id}">+ Add topic</button></div>`;
 }
 
 async function viewEditor(id) {
   const f = findSub(id); if (!f) return go('/');
-  if (f.x.locked) return go('/v/' + id);
   app.innerHTML = `<div class="wrap"><div class="empty">LOADING…</div></div>`;
   let html = '';
-  try { html = (await api('getPage', { id })).html; } catch (e) { toast(e.message); }
+  try { html = await loadPage(id); } catch (e) { toast(e.message); }
   app.innerHTML = `<div class="wrap">
-    <button class="back" data-a="backSubject" data-id="${f.s.id}">← ${esc(f.s.name)}</button>
+    <button class="back" data-a="${f.x.locked ? 'viewSub' : 'backSubject'}" data-id="${f.x.locked ? id : f.s.id}">← Cancel</button>
     <div class="label">${esc(f.t.name)}</div><h1 class="t">${esc(f.x.name)}</h1>
     <div class="ed-bar">
+      <button class="btn" id="sv">Save</button>
+      <button class="btn ghost" id="pvb">Preview</button>
+      <button class="btn ghost" id="an">+ Note</button>
+      <button class="btn ghost" id="aq">+ MCQ</button>
+      <button class="btn ghost" id="mo">Make offline</button>
       <button class="btn ghost" id="up">Upload</button>
       <button class="btn ghost" id="tp">Template</button>
-      <button class="btn ghost" id="pp">AI prompt</button>
-      <button class="btn ghost" id="pvb">Preview</button>
-      <button class="btn red" id="sv">Save &amp; lock</button>
       <input type="file" id="fi" accept=".html,.htm,text/html" hidden></div>
     <textarea class="code" id="ed" spellcheck="false" placeholder="Paste your HTML here, or upload a .html file…"></textarea>
     <div id="pvwrap" style="display:none"><iframe class="pv" id="pv" sandbox="allow-scripts allow-popups allow-forms allow-modals"></iframe></div>
     </div>`;
   const ed = document.getElementById('ed'); ed.value = html;
   const pvw = document.getElementById('pvwrap'), pv = document.getElementById('pv');
-  document.getElementById('up').onclick = () => document.getElementById('fi').click();
   const getTpl = async () => (await fetch('/template.html')).text();
+  const insertAt = (i, txt) => { ed.value = ed.value.slice(0, i) + txt + ed.value.slice(i); ed.focus(); ed.setSelectionRange(i, i); };
+  document.getElementById('up').onclick = () => document.getElementById('fi').click();
+  document.getElementById('fi').onchange = async e => { const file = e.target.files[0]; if (file) { ed.value = await file.text(); toast('File loaded'); } };
   document.getElementById('tp').onclick = async () => {
     if (ed.value.trim() && !await ask({ title: 'Replace with template?', input: false, ok: 'Replace', danger: true, msg: 'Your current text will be overwritten.' })) return;
     ed.value = await getTpl(); toast('Template loaded');
   };
-  document.getElementById('pp').onclick = async () => {
-    try { await navigator.clipboard.writeText(PROMPT + '\n\nTEMPLATE:\n' + await getTpl() + '\n\nMY NOTES:\n'); toast('Prompt + template copied'); }
-    catch { toast('Copy failed'); }
+  document.getElementById('mo').onclick = async () => {
+    toast('Embedding files…'); const r = await inlineAssets(ed.value);
+    if (r.html.length > 3400000) return toast('Too large to embed (3.5 MB limit)');
+    ed.value = r.html; toast(`Embedded ${r.n} file${r.n === 1 ? '' : 's'}${r.bad ? ', ' + r.bad + ' failed' : ''}`);
   };
-  document.getElementById('fi').onchange = async e => {
-    const file = e.target.files[0]; if (!file) return;
-    ed.value = await file.text(); toast('File loaded');
+  document.getElementById('an').onclick = () => {
+    const i = ed.value.indexOf('<!-- ===== 4.'); if (i < 0) return toast('Needs the template layout');
+    insertAt(i, '<section class="note">\n  <h2>New concept</h2>\n  <ul>\n    <li>Point</li>\n  </ul>\n</section>\n\n'); toast('Note block added');
+  };
+  document.getElementById('aq').onclick = () => {
+    const a = ed.value.indexOf('const MCQS'), b = a < 0 ? -1 : ed.value.indexOf('\n];', a); if (b < 0) return toast('Needs the template layout');
+    insertAt(b, `\n  {id:'q${Date.now().toString(36)}', q:'Question?', o:['A','B','C','D'], a:0, e:'Explanation'},`); toast('MCQ added');
   };
   document.getElementById('pvb').onclick = () => {
     const show = pvw.style.display === 'none';
-    pvw.style.display = show ? 'block' : 'none';
-    ed.style.display = show ? 'none' : 'block';
+    pvw.style.display = show ? 'block' : 'none'; ed.style.display = show ? 'none' : 'block';
     document.getElementById('pvb').textContent = show ? 'Edit' : 'Preview';
     if (show) { cur = { id, frame: 'pv', prog: {}, save: false }; pv.srcdoc = wrap(ed.value); }
   };
   document.getElementById('sv').onclick = async () => {
-    if (!ed.value.trim()) return toast('Add some HTML first');
-    const ok = await ask({ title: 'Save & lock?', input: false, ok: 'Save', danger: true,
-      msg: 'After saving you can’t edit this sub topic. Tapping it will open your page.' });
-    if (!ok) return;
-    try {
-      await api('savePage', { id, html: ed.value });
-      f.x.locked = true; await api('saveTree', { tree });
-      toast('Saved'); go('/v/' + id);
-    } catch (e) { toast('Failed: ' + e.message); }
+    if (!ed.value.trim()) return toast('Nothing to save');
+    try { f.x.v = Date.now(); await api('savePage', { id, html: ed.value, v: f.x.v }); f.x.locked = true; await api('saveTree', { tree }); toast('Saved'); go('/v/' + id); }
+    catch (e) { toast('Failed: ' + e.message); }
   };
 }
 
@@ -323,12 +433,12 @@ async function viewPage(id) {
     <button class="ic" data-a="backSubject" data-id="${f.s.id}">${ic('back')}</button>
     <span class="nm">${esc(f.x.name)}</span><span class="sync" id="st"></span>
     <button class="ic" data-a="resetProg" data-id="${id}" title="Reset MCQ progress">${ic('reset')}</button>
-    <button class="ic" data-a="unlock" data-id="${id}" title="Unlock to edit">${ic('edit')}</button></div>
+    <button class="btn ghost mini" data-a="editSub" data-id="${id}">Edit</button></div>
     <iframe class="full" id="fr" sandbox="allow-scripts allow-popups allow-forms allow-modals"></iframe>`;
   try {
-    const [pg, pr] = await Promise.all([api('getPage', { id }), api('getProgress', { id })]);
+    const [pgHtml, pr] = await Promise.all([loadPage(id), api('getProgress', { id })]);
     cur = { id, frame: 'fr', prog: pr.data || {}, save: true }; updStat();
-    document.getElementById('fr').srcdoc = wrap(pg.html || '<p style="font-family:sans-serif;padding:20px">Empty page.</p>');
+    document.getElementById('fr').srcdoc = wrap(pgHtml || '<p style="font-family:sans-serif;padding:20px">Empty page.</p>');
   }
   catch (e) { toast(e.message); }
 }
@@ -361,16 +471,207 @@ function viewRev() {
     <div class="label" style="margin-bottom:6px">${fmt(cal.sel)}${cal.sel === td ? ' · today' : ''} · ${sel.length} task${sel.length === 1 ? '' : 's'}</div>
     <div class="card" style="padding:6px 14px">${sel.map(taskRow).join('') || '<div class="empty">NOTHING SCHEDULED</div>'}</div></div>`;
 }
-const PROMPT = `Make ONE self-contained HTML file from MY NOTES below, using the TEMPLATE exactly (keep every ===== marker comment).
-- Theme: Nothing OS (pure black, white text, red #d71921 accent, Doto dot headings, Space Mono labels, no emoji).
-- Use ONLY my notes; no outside facts. Short bullets, tables where useful.
-- Notes: one <section class="note"> per concept.
-- MCQs: 15-25, one per line in MCQS: {id,q,o:[4],a:0-3,e:short}. Unique permanent ids (q1, q2...). Mix recall, application, traps.
-- Keep NP.record() tracking from the engine; no localStorage.
-- Output code only.`;
+/* ---------- prompts, status, export, drag ---------- */
+let prompts = [], noClick = 0;
+const savePrompts = () => api('savePrompts', { prompts }).catch(e => toast('Save failed: ' + e.message));
+const normTree = () => tree.subjects.forEach(s => s.topics.forEach(t => t.subs.forEach(x => { if (!x.status) x.status = x.date ? 'revision' : 'not_started'; })));
+
+function askForm(title, fields) {
+  return new Promise(res => {
+    const d = document.createElement('div'); d.className = 'modal';
+    d.innerHTML = `<div class="box"><h3>${esc(title)}</h3>${fields.map((f, i) => f.ta
+      ? `<textarea id="f${i}" placeholder="${esc(f.label)}" rows="9">${esc(f.value || '')}</textarea>`
+      : `<input id="f${i}" placeholder="${esc(f.label)}" value="${esc(f.value || '')}" maxlength="80">`).join('')}
+      <div class="row"><button class="btn ghost" id="mc">Cancel</button><button class="btn" id="mo">Save</button></div></div>`;
+    document.body.appendChild(d); d.querySelector('#f0').focus();
+    const close = v => { d.remove(); res(v); };
+    d.querySelector('#mc').onclick = () => close(null);
+    d.querySelector('#mo').onclick = () => { const v = fields.map((_, i) => d.querySelector('#f' + i).value.trim()); close(v[1] ? v : null); };
+  });
+}
+
+function askStatus(x) {
+  return new Promise(res => {
+    let st = x.status || 'not_started';
+    const d = document.createElement('div'); d.className = 'modal';
+    d.innerHTML = `<div class="box"><h3>Status</h3>
+      <div class="seg">${[['not_started', 'Not started'], ['revision', 'Revision'], ['completed', 'Completed']].map(([k, l]) => `<button class="btn ghost mini" data-s="${k}">${l}</button>`).join('')}</div>
+      <div id="dw"><p>Revision starts from this date: +1, 3, 7, 21 and 45 days.</p><input id="di" type="date" value="${x.date || today()}"></div>
+      <div class="row"><button class="btn ghost" id="mc">Cancel</button><button class="btn" id="mo">Save</button></div></div>`;
+    document.body.appendChild(d);
+    const paint = () => { d.querySelectorAll('[data-s]').forEach(b => b.classList.toggle('on', b.dataset.s === st)); d.querySelector('#dw').style.display = st === 'revision' ? 'block' : 'none'; };
+    d.querySelectorAll('[data-s]').forEach(b => b.onclick = () => { st = b.dataset.s; paint(); }); paint();
+    const close = v => { d.remove(); res(v); };
+    d.querySelector('#mc').onclick = () => close(null);
+    d.querySelector('#mo').onclick = () => close({ status: st, date: d.querySelector('#di').value || today() });
+    d.onclick = e => { if (e.target === d) close(null); };
+  });
+}
+
+function saveFile(blob, name) {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name.replace(/[\\/:*?"<>|]/g, '_');
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+async function fetchPages(subs) {
+  const pages = {}, list = subs.filter(x => x.locked);
+  for (let i = 0; i < list.length; i += 5)
+    await Promise.all(list.slice(i, i + 5).map(async x => { pages[x.id] = await loadPage(x.id); }));
+  return pages;
+}
+const EXPORT = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>__TITLE__</title>
+<style>body{margin:0;background:#000;color:#f2f2f2;font-family:system-ui,sans-serif}.w{max-width:720px;margin:0 auto;padding:20px 16px 60px}h1{font-size:34px;margin:0 0 14px}h2{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:#8a8a8a;margin:22px 0 8px}button{display:block;width:100%;text-align:left;background:#0b0b0b;color:inherit;border:1px solid #2a2a2a;border-radius:16px;padding:13px 16px;margin:6px 0;font:inherit}#v{position:fixed;inset:0;background:#fff;display:none;flex-direction:column}#v.on{display:flex}#v nav{background:#000;padding:10px 12px;display:flex;gap:10px;align-items:center;color:#fff}#v nav button{width:auto;margin:0;padding:8px 14px;border-radius:999px}iframe{flex:1;border:0;width:100%}</style></head><body>
+<div class="w"><h1>__TITLE__</h1><div id="l"></div></div>
+<div id="v"><nav><button id="b">Back</button><span id="n"></span></nav><iframe id="f" sandbox="allow-scripts allow-popups allow-forms allow-modals"></iframe></div>
+<script>var D=__DATA__,L=document.getElementById('l'),V=document.getElementById('v'),F=document.getElementById('f');
+D.topics.forEach(function(t){var h=document.createElement('h2');h.textContent=t.name;L.appendChild(h);t.subs.forEach(function(s){var b=document.createElement('button');b.textContent=s.name;if(!s.html)b.style.opacity=.4;b.onclick=function(){if(!s.html)return;document.getElementById('n').textContent=s.name;F.srcdoc=s.html;V.className='on'};L.appendChild(b)})});
+document.getElementById('b').onclick=function(){V.className='';F.srcdoc=''};<\/script></body></html>`;
+
+/* drag to reorder (grip handle; works with touch) */
+let drag = null;
+app.addEventListener('pointerdown', e => {
+  const g = e.target.closest('.grip'); if (!g) return;
+  const item = g.closest('.drag-item'); if (!item) return;
+  e.preventDefault(); drag = { item, type: item.dataset.type, id: e.pointerId }; item.classList.add('dragging');
+});
+window.addEventListener('pointermove', e => {
+  if (!drag || e.pointerId !== drag.id) return;
+  const { item, type } = drag, y = e.clientY;
+  if (y < 70) scrollBy(0, -12); else if (y > innerHeight - 70) scrollBy(0, 12);
+  const el = document.elementFromPoint(e.clientX, y); if (!el) return;
+  const t = el.closest(`.drag-item[data-type="${type}"]`);
+  if (t && t !== item && !item.contains(t)) {
+    const r = t.getBoundingClientRect(); t.parentNode.insertBefore(item, y < r.top + r.height / 2 ? t : t.nextSibling);
+  } else if (!t) { const box = el.closest(`[data-box="${type}"]`); if (box && !item.contains(box)) box.appendChild(item); }
+});
+function endDrag() {
+  if (!drag) return; const d = drag; drag = null; d.item.classList.remove('dragging'); noClick = Date.now() + 400; commitOrder(d.type);
+}
+window.addEventListener('pointerup', endDrag); window.addEventListener('pointercancel', endDrag);
+function commitOrder(type) {
+  const ids = box => [...box.children].filter(c => c.classList.contains('drag-item')).map(c => c.dataset.id);
+  if (type === 'subject') {
+    const m = new Map(tree.subjects.map(s => [s.id, s]));
+    const n = ids(app.querySelector('[data-box="subject"]')).map(i => m.get(i)).filter(Boolean);
+    if (n.length !== tree.subjects.length) return route();
+    tree.subjects = n;
+  } else {
+    const s = findSubject(location.hash.split('/')[2]); if (!s) return route();
+    const tm = new Map(s.topics.map(t => [t.id, t])), all = s.topics.flatMap(t => t.subs), sm = new Map(all.map(x => [x.id, x]));
+    const order = ids(app.querySelector('[data-box="topic"]')).map(i => tm.get(i)).filter(Boolean);
+    const subs = new Map(); let count = 0;
+    app.querySelectorAll('[data-type="topic"]').forEach(card => { const l = ids(card.querySelector('[data-box="sub"]')).map(i => sm.get(i)).filter(Boolean); subs.set(card.dataset.id, l); count += l.length; });
+    if (order.length !== s.topics.length || count !== all.length) return route();
+    order.forEach(t => { t.subs = subs.get(t.id); }); s.topics = order;
+  }
+  persist();
+}
+
+/* ---------- extra offline tools: fonts, embed assets, restore ---------- */
+let fontCss = '';
+const b64 = blob => new Promise((res, rej) => { const f = new FileReader(); f.onload = () => res(f.result); f.onerror = rej; f.readAsDataURL(blob); });
+const dataUri = async u => { const r = await fetch(u); if (!r.ok) throw new Error('x'); return b64(await r.blob()); };
+async function asyncReplace(str, re, fn) {
+  const ms = [...str.matchAll(re)], out = await Promise.all(ms.map(m => fn(m).catch(() => m[0])));
+  let i = 0; return str.replace(re, () => out[i++]);
+}
+/* Fonts are saved once on the phone and handed to every page, so notes show the Nothing fonts offline */
+async function buildFontCss() {
+  const put = css => { fontCss = css; if (!document.getElementById('nnfonts')) { const s = document.createElement('style'); s.id = 'nnfonts'; s.textContent = css; document.head.appendChild(s); } };
+  const c = await idbGet('fontcss'); if (c) return put(c);
+  if (!navigator.onLine) return;
+  try {
+    const link = document.querySelector('link[href*="fonts.googleapis.com/css2"]'); if (!link) return;
+    const css = await (await fetch(link.href)).text();
+    const blocks = [...css.matchAll(/\/\*\s*([\w-]+)\s*\*\/\s*(@font-face\s*\{[^}]*\})/g)].filter(m => m[1] === 'latin').map(m => m[2]);
+    let out = '';
+    for (const b of blocks) out += (await asyncReplace(b, /url\((https:[^)]+)\)/g, async m => `url(${await dataUri(m[1])})`)) + '\n';
+    if (out) { await idbSet('fontcss', out); put(out); }
+  } catch {}
+}
+/* Embed web images, scripts and stylesheets into the page so it works with no internet */
+async function inlineAssets(html) {
+  let n = 0, bad = 0;
+  const cssUrls = (css, base) => asyncReplace(css, /url\(\s*(['"]?)([^)'"]+)\1\s*\)/g, async m => {
+    if (/^data:|^#/.test(m[2])) return m[0];
+    try { const d = await dataUri(new URL(m[2], base).href); n++; return `url(${d})`; } catch { bad++; return m[0]; }
+  });
+  html = await asyncReplace(html, /<link\b[^>]*>/gi, async m => {
+    const h = m[0].match(/href=["'](https?:[^"']+)["']/i);
+    if (!h || !/rel=["']?stylesheet/i.test(m[0]) || /fonts\.googleapis\.com/.test(h[1])) return m[0];   // Google fonts are handled by the app
+    try { const css = await (await fetch(h[1])).text(); n++; return '<style>/* inlined: ' + h[1] + ' */\n' + await cssUrls(css, h[1]) + '</style>'; } catch { bad++; return m[0]; }
+  });
+  html = await asyncReplace(html, /<script\b[^>]*\bsrc=["'](https?:[^"']+)["'][^>]*>\s*<\/script>/gi, async m => {
+    if (/type=["']?module/i.test(m[0])) return m[0];
+    try { const js = await (await fetch(m[1])).text(); n++; return '<script>' + js.replace(/<\/script/gi, '<\\/script') + '<\/script>'; } catch { bad++; return m[0]; }
+  });
+  html = await asyncReplace(html, /(<img\b[^>]*\bsrc=["'])(https?:[^"']+)(["'])/gi, async m => {
+    try { const d = await dataUri(m[2]); n++; return m[1] + d + m[3]; } catch { bad++; return m[0]; }
+  });
+  return { html, n, bad };
+}
 
 /* ---------- actions ---------- */
 const actions = {
+  noop: () => {},
+  restore() {
+    const inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.json,application/json';
+    inp.onchange = async () => {
+      const file = inp.files[0]; if (!file) return;
+      let b; try { b = JSON.parse(await file.text()); } catch { return toast('Not a valid backup'); }
+      if (!b.tree || !Array.isArray(b.tree.subjects)) return toast('Not a valid backup');
+      if (!await ask({ title: 'Restore this backup?', input: false, ok: 'Restore', danger: true, msg: 'This replaces your current subjects, pages and prompts with the backup.' })) return;
+      toast('Restoring…');
+      try {
+        tree = b.tree; normTree(); prompts = b.prompts || [];
+        for (const [id, html] of Object.entries(b.pages || {})) { const v = Date.now(), hit = findSub(id); if (hit) hit.x.v = v; await api('savePage', { id, html, v }); }
+        await api('saveTree', { tree }); await api('savePrompts', { prompts }); toast('Restored'); route();
+      } catch (e) { toast('Failed: ' + e.message); }
+    };
+    inp.click();
+  },
+  prefetch: () => prefetchAll(),
+  viewSub: id => go('/v/' + id),
+  editSub: id => go('/e/' + id),
+  async setStatus(id) {
+    const { x } = findSub(id); const v = await askStatus(x); if (!v) return;
+    x.status = v.status;
+    if (v.status === 'revision') { x.date = v.date; x.done = (x.done || []).filter(d => INT.some(n => addDays(v.date, n) === d)); }
+    await persist(); route();
+  },
+  async addPrompt() {
+    const v = await askForm('New prompt', [{ label: 'Title' }, { label: 'Prompt text', ta: true }]); if (!v) return;
+    prompts.push({ id: uid(), title: v[0], text: v[1] }); await savePrompts(); route();
+  },
+  async editPrompt(id) {
+    const p = prompts.find(x => x.id === id); const v = await askForm('Edit prompt', [{ label: 'Title', value: p.title }, { label: 'Prompt text', ta: true, value: p.text }]); if (!v) return;
+    p.title = v[0]; p.text = v[1]; await savePrompts(); route();
+  },
+  async delPrompt(id) {
+    if (!await ask({ title: 'Delete prompt?', input: false, ok: 'Delete', danger: true })) return;
+    prompts = prompts.filter(x => x.id !== id); await savePrompts(); route();
+  },
+  async copyPrompt(id) {
+    try { await navigator.clipboard.writeText(prompts.find(x => x.id === id).text); toast('Copied'); } catch { toast('Copy failed'); }
+  },
+  async copyPromptTpl(id) {
+    try { const tpl = await (await fetch('/template.html')).text(); await navigator.clipboard.writeText(prompts.find(x => x.id === id).text + '\n\nTEMPLATE:\n' + tpl + '\n\nMY NOTES:\n'); toast('Copied with template'); } catch { toast('Copy failed'); }
+  },
+  async dlSubject(sid) {
+    const s = findSubject(sid); toast('Preparing download…');
+    try {
+      const pages = await fetchPages(s.topics.flatMap(t => t.subs));
+      const D = { name: s.name, topics: s.topics.map(t => ({ name: t.name, subs: t.subs.map(x => ({ name: x.name, html: pages[x.id] || '' })) })) };
+      const doc = EXPORT.split('__TITLE__').join(esc(s.name)).replace('__DATA__', () => JSON.stringify(D).replace(/</g, '\\u003c'));
+      saveFile(new Blob([doc], { type: 'text/html' }), s.name + '.html');
+    } catch (e) { toast('Failed: ' + e.message); }
+  },
+  async backup() {
+    toast('Preparing backup…');
+    try {
+      const pages = await fetchPages(tree.subjects.flatMap(s => s.topics.flatMap(t => t.subs)));
+      saveFile(new Blob([JSON.stringify({ exported: new Date().toISOString(), tree, pages, prompts }, null, 1)], { type: 'application/json' }), 'notes-backup-' + today() + '.json');
+    } catch (e) { toast('Failed: ' + e.message); }
+  },
   home: () => go('/'),
   rev: () => go('/r'),
   selDay: id => { cal.sel = id; viewRev(); },
@@ -390,7 +691,10 @@ const actions = {
     if (!await ask({ title: 'Reset MCQ progress?', input: false, ok: 'Reset', danger: true, msg: 'Correct/wrong history for this page will be cleared.' })) return;
     await api('saveProgress', { id, data: {} }); findSub(id).x.stats = null; await persist(); route();
   },
-  logout: () => { localStorage.removeItem('nn_pass'); pass = ''; viewLogin(); },
+  async logout() {
+    if (!await ask({ title: 'Lock the app?', input: false, ok: 'Lock', msg: 'You will need your password to open it again.' })) return;
+    localStorage.removeItem('nn_pass'); const a = await idbGet('auth'); await idbSet('auth', { hash: a && a.hash }); pass = ''; viewLogin();
+  },
   openSubject: id => go('/s/' + id),
   backSubject: id => go('/s/' + id),
   openSub: id => { const f = findSub(id); go((f.x.locked ? '/v/' : '/e/') + id); },
@@ -428,7 +732,7 @@ const actions = {
 
   async addSub(tid) {
     const n = await ask({ title: 'New sub topic', ok: 'Add' }); if (!n) return;
-    findTopic(tid).t.subs.push({ id: uid(), name: n, locked: false, date: today(), done: [] }); await persist(); route();
+    findTopic(tid).t.subs.push({ id: uid(), name: n, locked: false, status: 'not_started', done: [] }); await persist(); route();
   },
   async renSub(id) {
     const { x } = findSub(id); const n = await ask({ title: 'Rename sub topic', value: x.name, ok: 'Save' });
@@ -448,6 +752,7 @@ const actions = {
 };
 
 app.addEventListener('click', e => {
+  if (Date.now() < noClick) return;
   const el = e.target.closest('[data-a]'); if (!el) return;
   e.stopPropagation();
   const fn = actions[el.dataset.a]; if (fn) fn(el.dataset.id, el.dataset);
@@ -468,9 +773,10 @@ function route() {
 window.addEventListener('hashchange', route);
 
 async function boot() {
-  try { tree = (await api('getTree')).tree; route(); }
+  try { buildFontCss(); await flushOutbox(); const [t, p] = await Promise.all([api('getTree'), api('getPrompts')]); tree = t.tree; prompts = p.prompts || []; normTree(); route(); prefetchAll(); if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); }
   catch (e) {
-    if (e.auth) { localStorage.removeItem('nn_pass'); pass = ''; return viewLogin('Wrong password'); }
+    if (e.message === 'Offline') { app.innerHTML = `<div class="wrap"><div class="empty">OFFLINE AND NOTHING SAVED YET<br>OPEN ONCE WITH INTERNET<br><br><button class="btn ghost" onclick="boot()">Retry</button></div></div>`; return; }
+    if (e.auth) { localStorage.removeItem('nn_pass'); idbSet('auth', {}); pass = ''; return viewLogin('Wrong password'); }
     app.innerHTML = `<div class="wrap"><div class="empty">${esc(e.message)}<br><br><button class="btn ghost" onclick="boot()">Retry</button></div></div>`;
   }
 }
@@ -480,11 +786,20 @@ document.addEventListener('visibilitychange', async () => {
   if (document.visibilityState !== 'visible' || !pass) return;
   const k = (location.hash.split('/')[1] || '');
   if (k === 'e' || k === 'v') return;
-  try { tree = (await api('getTree')).tree; route(); } catch {}
+  try { await flushOutbox(); tree = (await api('getTree')).tree; normTree(); route(); prefetchAll(); } catch {}
 });
 
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
-pass ? boot() : viewLogin();
+addEventListener('online', async () => { await flushOutbox(); try { tree = (await api('getTree')).tree; normTree(); } catch {} prefetchAll(); });
+addEventListener('offline', () => setOff());
+if ('serviceWorker' in navigator) {
+  const had = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (had) location.reload(); });
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+(async () => {   // stay signed in: restore the saved login if the browser cleared localStorage
+  if (!pass) { const a = await idbGet('auth'); if (a && a.pass) { pass = a.pass; localStorage.setItem('nn_pass', pass); } }
+  pass ? boot() : viewLogin();
+})();
 </script>
 </body>
 </html>
