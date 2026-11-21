@@ -67,7 +67,7 @@ key between builds
         working-directory: android-app/android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug--no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
