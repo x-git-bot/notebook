@@ -41,7 +41,7 @@ jobs:
 
       - name: Install
         working-directory: android-app
-        run: npm install
+        run: npm install --no-audit --no-fund --legacy-peer-deps
 
       - name: Create Android project
         working-directory: android-app
