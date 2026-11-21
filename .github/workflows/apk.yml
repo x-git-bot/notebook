@@ -15,6 +15,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check that the needed files exist
+        run: |
+          missing=0
+          for f in index.html template.html manifest.json icons/icon-192.png icons/icon-512.png android-app/package.json android-app/capacitor.config.json; do
+            if [ ! -f "$f" ]; then echo "::error::Missing file in your repo: $f"; missing=1; fi
+          done
+          if [ "$missing" = "1" ]; then exit 1; fi
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -44,12 +52,16 @@ jobs:
       - name: App icon and splash (optional)
         working-directory: android-app
         continue-on-error: true
-        run: npx @capacitor/assets generate --android --iconBackgroundColor "#000000" --splashBackgroundColor "#000000"
-
-      - name: Use the fixed signing key (so updates install over the old app)
         run: |
-          mkdir -p ~/.android
-          cp android-app/debug.keystore ~/.android/debug.keystore
+          test -f assets/logo.png
+          npx @capacitor/assets generate --android --iconBackgroundColor "#000000" --splashBackgroundColor "#000000"
+
+      - name: Keep the same signing 
+key between builds
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: notes-debug-keystore-v1
 
       - name: Build APK
         working-directory: android-app/android
@@ -61,4 +73,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Notes-APK
-          path: android-app/android/app/build/outputs/apk/debug/app-debug.apk
+          path: android-app/android/
+app/build/outputs/apk/debug/app-debug.apk
