@@ -133,6 +133,9 @@ iframe.full{position:fixed;left:0;right:0;bottom:0;top:calc(52px + env(safe-area
 <script>
 const app = document.getElementById('app');
 let pass = localStorage.getItem('nn_pass') || '';
+// Inside the Android app (APK) the files are local, so requests go to your Vercel address
+const IS_APP = !!window.Capacitor && /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+let apiBase = IS_APP ? (localStorage.getItem('nn_api') || '') : '';
 let tree = { subjects: [] };
 
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -177,7 +180,7 @@ async function doSave() {
 function beacon() {
   if (!saveT || !pending || !pending.save) return;
   clearTimeout(saveT); saveT = null; queue('saveProgress', { id: pending.id, data: pending.prog });
-  fetch('/api/notes', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json', 'x-password': pass },
+  fetch(apiBase + '/api/notes', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json', 'x-password': pass },
     body: JSON.stringify({ action: 'saveProgress', id: pending.id, data: pending.prog }) }).catch(() => {});
 }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') beacon(); });
@@ -201,7 +204,7 @@ const idbSet = (k, v) => idb.then(db => db ? new Promise(res => { const t = db.t
 
 /* ---------- API with offline cache + outbox ---------- */
 async function rawApi(action, data = {}) {
-  const r = await fetch('/api/notes', {
+  const r = await fetch(apiBase + '/api/notes', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-password': pass },
     body: JSON.stringify({ action, ...data })
@@ -313,12 +316,18 @@ function viewLogin(err = '') {
   app.innerHTML = `<div class="login">
     <div class="logo">NOTES<i></i></div>
     <div class="label" style="margin-bottom:28px">Private vault</div>
+    ${IS_APP ? `<input id="su" type="url" placeholder="https://your-site.vercel.app" value="${esc(apiBase)}" autocapitalize="off" autocomplete="off" spellcheck="false">` : ''}
     <input id="pw" type="password" placeholder="Password" autocomplete="current-password">
     <div class="err" id="er">${esc(err)}</div>
     <button class="btn" id="go">Unlock</button></div>`;
   const pw = document.getElementById('pw');
   const submit = async () => {
     const typed = pw.value, er = document.getElementById('er'); er.textContent = ''; pass = typed;
+    if (IS_APP) {
+      const u = (document.getElementById('su').value || '').trim().replace(/\/+$/, '');
+      if (!/^https:\/\/[^\s/]+$/i.test(u)) { er.textContent = 'Enter your site address, like https://your-site.vercel.app'; pass = ''; return; }
+      apiBase = u; localStorage.setItem('nn_api', u);
+    }
     try {
       await rawApi('ping');
       localStorage.setItem('nn_pass', pass); await idbSet('auth', { pass, hash: await sha(pass) }); await boot();
@@ -531,7 +540,16 @@ function askStatus(x) {
   });
 }
 
-function saveFile(blob, name) {
+async function saveFile(blob, name) {
+  const P = window.Capacitor && Capacitor.Plugins;
+  if (IS_APP && P && P.Filesystem && P.Share) {   // Android: save then open the share sheet (Drive, Files, WhatsApp…)
+    try {
+      const safe = name.replace(/[\\/:*?"<>|]/g, '_');
+      const r = await P.Filesystem.writeFile({ path: safe, data: await blob.text(), directory: 'CACHE', encoding: 'utf8' });
+      await P.Share.share({ title: safe, url: r.uri, dialogTitle: 'Save or send file' });
+    } catch (e) { if (!/cancel/i.test(String(e && e.message))) toast('Could not save file'); }
+    return;
+  }
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name.replace(/[\\/:*?"<>|]/g, '_');
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
 }
@@ -815,14 +833,14 @@ document.addEventListener('visibilitychange', async () => {
 
 addEventListener('online', async () => { await flushOutbox(); try { tree = (await api('getTree')).tree; normTree(); } catch {} prefetchAll(); });
 addEventListener('offline', () => setOff());
-if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator && !IS_APP) {
   const had = !!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener('controllerchange', () => { if (had) location.reload(); });
   navigator.serviceWorker.register('/sw.js').catch(() => {});
 }
 (async () => {   // stay signed in: restore the saved login if the browser cleared localStorage
   if (!pass) { const a = await idbGet('auth'); if (a && a.pass) { pass = a.pass; localStorage.setItem('nn_pass', pass); } }
-  pass ? boot() : viewLogin();
+  (pass && (!IS_APP || apiBase)) ? boot() : viewLogin();
 })();
 </script>
 </body>
