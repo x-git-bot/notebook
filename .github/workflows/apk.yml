@@ -15,11 +15,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check that the needed files exist
+      - name: Check files exist
         run: |
           missing=0
-          for f in index.html template.html manifest.json icons/icon-192.png icons/icon-512.png android-app/package.json android-app/capacitor.config.json; do
-            if [ ! -f "$f" ]; then echo "::error::Missing file in your repo: $f"; missing=1; fi
+          for f in index.html template.html \
+            manifest.json icons/icon-192.png \
+            icons/icon-512.png \
+            android-app/package.json \
+            android-app/capacitor.config.json
+          do
+            if [ ! -f "$f" ]; then
+              echo "::error::Missing: $f"
+              missing=1
+            fi
           done
           if [ "$missing" = "1" ]; then exit 1; fi
 
@@ -32,16 +40,19 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Copy the web app into the Android project
+      - name: Copy web app in
         working-directory: android-app
         run: |
-          rm -rf www && mkdir -p www
-          cp ../index.html ../template.html ../manifest.json www/
+          rm -rf www
+          mkdir -p www
+          cp ../index.html www/
+          cp ../template.html www/
+          cp ../manifest.json www/
           cp -r ../icons www/icons
 
       - name: Install
         working-directory: android-app
-        run: npm install --no-audit --no-fund --legacy-peer-deps
+        run: npm install --legacy-peer-deps
 
       - name: Create Android project
         working-directory: android-app
@@ -49,15 +60,17 @@ jobs:
           npx cap add android
           npx cap sync android
 
-      - name: App icon and splash (optional)
+      - name: Icon and splash (optional)
         working-directory: android-app
         continue-on-error: true
         run: |
           test -f assets/logo.png
-          npx @capacitor/assets generate --android --iconBackgroundColor "#000000" --splashBackgroundColor "#000000"
+          npx @capacitor/assets generate \
+            --android \
+            --iconBackgroundColor "#000000" \
+            --splashBackgroundColor "#000000"
 
-      - name: Keep the same signing 
-key between builds
+      - name: Keep signing key
         uses: actions/cache@v4
         with:
           path: ~/.android/debug.keystore
@@ -67,11 +80,16 @@ key between builds
         working-directory: android-app/android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug--no-daemon
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Collect APK
+        run: |
+          D=android-app/android/app
+          D=$D/build/outputs/apk/debug
+          cp $D/app-debug.apk notes.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Notes-APK
-          path: android-app/android/
-app/build/outputs/apk/debug/app-debug.apk
+          path: notes.apk
