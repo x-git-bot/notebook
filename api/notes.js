@@ -30,6 +30,11 @@ function sameText(a, b) {
 
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
+  // allow the Android app (served from https://localhost) to call this API
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-password');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
   if (!URL_ || !TOKEN || !PASSWORD)
     return res.status(500).json({ error: 'Server not configured (missing env vars)' });
