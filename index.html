@@ -104,10 +104,25 @@ iframe.full{position:fixed;left:0;right:0;bottom:0;top:calc(52px + env(safe-area
 .box textarea:focus{border-color:var(--red)}
 .pr-t{color:var(--mu);font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
 .boot{font-family:var(--mono);color:var(--mu);text-align:center;padding:38vh 20px 0;letter-spacing:1px;font-size:12px;line-height:1.6}
+.tabs2{display:flex;gap:8px;margin:12px 0 16px}
+.tab{flex:1;background:none;border:1px solid var(--line2);color:var(--tx);border-radius:999px;padding:9px;font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase}
+.tab.on{background:var(--tx);color:#000}
+select{width:100%;background:#000;border:1px solid var(--line2);border-radius:14px;padding:13px 14px;color:var(--tx);font-family:var(--mono);font-size:14px;margin:16px 0 8px;outline:none}
+.box select{margin:0 0 12px}
+.trow{display:flex;align-items:center;justify-content:space-between;padding:8px 2px;border-top:1px dashed var(--line2);font-family:var(--mono);font-size:13px}
+.two{display:flex;gap:8px}.two input{flex:1}
+.day .hh{position:absolute;bottom:4px;left:0;right:0;font-size:8px;color:var(--mu);text-align:center}
+.day.sel .hh{color:#000}
+.bars{position:relative}
+.br{display:grid;grid-template-columns:34px 1fr 58px;align-items:center;gap:0;margin:3px 0;font-family:var(--mono);font-size:10px;color:var(--mu)}
+.bt{height:10px;background:var(--s2);border-radius:5px;overflow:hidden}
+.bt i{display:block;height:100%;background:var(--tx);border-radius:5px}
+.bv{text-align:right}
+.base{position:absolute;top:-4px;bottom:-4px;width:0;border-left:2px solid var(--red);z-index:2;pointer-events:none}
 </style>
 </head>
 <body>
-<div id="app"><div class="boot">LOADING… · build 7</div></div>
+<div id="app"><div class="boot">LOADING… · build 9</div></div>
 
 <script>
 (function () {
@@ -127,7 +142,7 @@ iframe.full{position:fixed;left:0;right:0;bottom:0;top:calc(52px + env(safe-area
   }
   window.addEventListener('error', function (e) { fail('Error: ' + (e.message || 'unknown')); });
   window.addEventListener('unhandledrejection', function (e) { fail('Error: ' + ((e.reason && e.reason.message) || e.reason)); });
-  setTimeout(function () { fail('The app did not start (build 7).'); }, 6000);
+  setTimeout(function () { fail('The app did not start (build 9).'); }, 6000);
 })();
 </script>
 <script>
@@ -147,7 +162,7 @@ function toast(m) {
   document.body.appendChild(t); setTimeout(() => t.remove(), 2200);
 }
 
-const I={edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>',power:'<path d="M12 3v9M6.3 7.5a8 8 0 1 0 11.4 0"/>',cal:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',back:'<path d="M15 5l-7 7 7 7"/>',reset:'<path d="M4 12a8 8 0 1 1 3 6.2M4 19v-5h5"/>',grip:'<circle cx="9" cy="6" r="1.2"/><circle cx="15" cy="6" r="1.2"/><circle cx="9" cy="12" r="1.2"/><circle cx="15" cy="12" r="1.2"/><circle cx="9" cy="18" r="1.2"/><circle cx="15" cy="18" r="1.2"/>',dl:'<path d="M12 4v11M7 11l5 5 5-5M5 20h14"/>',l:'<path d="M15 5l-7 7 7 7"/>',r:'<path d="M9 5l7 7-7 7"/>'};
+const I={edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>',power:'<path d="M12 3v9M6.3 7.5a8 8 0 1 0 11.4 0"/>',cal:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',back:'<path d="M15 5l-7 7 7 7"/>',reset:'<path d="M4 12a8 8 0 1 1 3 6.2M4 19v-5h5"/>',bell:'<path d="M6 17h12l-1.5-2V10a4.5 4.5 0 1 0-9 0v5zM10 20a2 2 0 0 0 4 0"/>',grip:'<circle cx="9" cy="6" r="1.2"/><circle cx="15" cy="6" r="1.2"/><circle cx="9" cy="12" r="1.2"/><circle cx="15" cy="12" r="1.2"/><circle cx="9" cy="18" r="1.2"/><circle cx="15" cy="18" r="1.2"/>',dl:'<path d="M12 4v11M7 11l5 5 5-5M5 20h14"/>',l:'<path d="M15 5l-7 7 7 7"/>',r:'<path d="M9 5l7 7-7 7"/>'};
 const ic = n => `<svg class="si" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${I[n]}</svg>`;
 const pad = n => String(n).padStart(2, '0');
 const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -214,7 +229,7 @@ async function rawApi(action, data = {}) {
   if (!r.ok) { const e = new Error(j.error || 'Server error'); e.server = true; throw e; }
   return j;
 }
-const RK = { getTree: () => 'tree', getPrompts: () => 'prompts', getProgress: d => 'prog:' + d.id };
+const RK = { getTree: () => 'tree', getPrompts: () => 'prompts', getLog: () => 'log', getProgress: d => 'prog:' + d.id };
 const qk = (a, d) => a + ':' + (d.id || '');
 let warned = false, offTxt = '';
 async function queue(action, data) { const o = (await idbGet('outbox')) || {}; o[qk(action, data)] = { action, data }; await idbSet('outbox', o); setOff(); }
@@ -230,6 +245,7 @@ async function api(action, data = {}) {
   // keep a local copy of everything written, so offline reads match
   if (action === 'saveTree') await idbSet('tree', { tree: data.tree });
   else if (action === 'savePrompts') await idbSet('prompts', { prompts: data.prompts });
+  else if (action === 'saveLog') await idbSet('log', { log: data.log });
   else if (action === 'saveProgress') await idbSet('prog:' + data.id, { data: data.data });
   else if (action === 'savePage') await idbSet('page:' + data.id, { html: data.html, v: data.v || 0 });
   try {
@@ -283,6 +299,7 @@ async function prefetchAll() {
 async function persist() {
   try { await api('saveTree', { tree }); }
   catch (e) { toast('Save failed: ' + e.message); }
+  scheduleSoon();
 }
 
 function ask({ title, value = '', type = 'text', input = true, ok = 'OK', danger = false, msg = '' }) {
@@ -368,6 +385,8 @@ function viewHome() {
       <div style="display:flex;align-items:center;gap:6px"><span class="sync" id="off" data-a="prefetch"></span>
       <button class="ic" data-a="logout" title="Lock">${ic('power')}</button></div></div>
     <div class="card rev" data-a="rev"><span class="big">${dueN}</span><span class="nm">Today’s revision</span>${ic('cal')}</div>
+    <div class="label" data-a="remSet" style="margin:10px 4px 0;cursor:pointer;display:flex;align-items:center;gap:8px">${ic('bell')}<span>Reminder · ${rem.on ? rem.t : 'off'}</span></div>
+    ${tm.ph !== 'idle' ? `<div class="label" data-a="tab" data-id="t" style="margin:8px 4px 0;cursor:pointer;color:var(--red)">Timer ${tm.ph === 'run' ? 'running' : 'paused'} · ${mmss(leftSec())}</div>` : ''}
     <div class="label" style="margin:18px 0 12px">Subjects</div>
     ${list ? `<div data-box="subject">${list}</div>` : `<div class="empty">NO SUBJECTS YET</div>`}
     <button class="add" data-a="addSubject">+ Add subject</button>
@@ -494,7 +513,7 @@ function viewRev() {
   const sel = T.filter(k => k.due === cal.sel);
   app.innerHTML = `<div class="wrap">
     <button class="back" data-a="home">← Home</button>
-    <h1 class="t">Revision</h1>
+    <h1 class="t">Revision</h1>${tabsHtml('r')}
     <div class="label" style="margin:14px 0 6px">Due today · ${due.length}</div>
     <div class="card" style="padding:6px 14px">${due.map(taskRow).join('') || '<div class="empty">ALL CAUGHT UP</div>'}</div>
     <div class="cal-h" style="margin-top:22px"><button class="ic" data-a="prevM">${ic('l')}</button>
@@ -545,7 +564,8 @@ async function saveFile(blob, name) {
   if (IS_APP && P && P.Filesystem && P.Share) {   // Android: save then open the share sheet (Drive, Files, WhatsApp…)
     try {
       const safe = name.replace(/[\\/:*?"<>|]/g, '_');
-      const r = await P.Filesystem.writeFile({ path: safe, data: await blob.text(), directory: 'CACHE', encoding: 'utf8' });
+      const txt = /^(text|application\/json)/.test(blob.type);
+      const r = await P.Filesystem.writeFile(txt ? { path: safe, data: await blob.text(), directory: 'CACHE', encoding: 'utf8' } : { path: safe, data: (await b64(blob)).split(',')[1], directory: 'CACHE' });
       await P.Share.share({ title: safe, url: r.uri, dialogTitle: 'Save or send file' });
     } catch (e) { if (!/cancel/i.test(String(e && e.message))) toast('Could not save file'); }
     return;
@@ -651,8 +671,317 @@ async function inlineAssets(html) {
   return { html, n, bad };
 }
 
+/* ---------- revision reminders (Android app: local notifications, work offline) ---------- */
+let rem = { on: false, t: '08:00' }, remT = null;
+try { rem = Object.assign(rem, JSON.parse(localStorage.getItem('nn_rem') || '{}')); } catch {}
+const LN = () => (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.LocalNotifications) || null;
+const scheduleSoon = () => { clearTimeout(remT); remT = setTimeout(scheduleReminders, 800); };
+async function scheduleReminders() {
+  const ln = LN(); if (!IS_APP || !ln) return;
+  try {
+    const pend = await ln.getPending();
+    const old = (pend.notifications || []).filter(n => n.id >= 1000 && n.id < 1100).map(n => ({ id: n.id }));
+    if (old.length) await ln.cancel({ notifications: old });
+    if (!rem.on) return;
+    if ((await ln.checkPermissions()).display !== 'granted') return;
+    const [h, m] = rem.t.split(':').map(Number), T = tasks(), now = new Date(), list = [];
+    for (let d = 0; d < 14; d++) {
+      const at = new Date(now.getFullYear(), now.getMonth(), now.getDate() + d, h, m, 0);
+      if (at <= now) continue;
+      const due = T.filter(k => !k.done && k.due <= ymd(at));
+      if (!due.length) continue;
+      const names = [...new Set(due.map(k => k.x.name))];
+      list.push({ id: 1000 + d, title: 'Revision time', body: `${due.length} revision${due.length > 1 ? 's' : ''} due: ${names.slice(0, 3).join(', ')}${names.length > 3 ? ' +' + (names.length - 3) + ' more' : ''}`, schedule: { at, allowWhileIdle: true } });
+    }
+    if (list.length) await ln.schedule({ notifications: list });
+  } catch (e) {}
+}
+function askReminder() {
+  return new Promise(res => {
+    let on = rem.on;
+    const d = document.createElement('div'); d.className = 'modal';
+    d.innerHTML = `<div class="box"><h3>Revision reminder</h3>
+      <p>A daily notification listing what is due. Works offline, in the Android app.</p>
+      <div class="seg"><button class="btn ghost mini" data-o="1">On</button><button class="btn ghost mini" data-o="0">Off</button></div>
+      <input id="rt" type="time" value="${rem.t}">
+      <div class="row"><button class="btn ghost" id="mc">Cancel</button><button class="btn" id="mo">Save</button></div></div>`;
+    document.body.appendChild(d);
+    const paint = () => d.querySelectorAll('[data-o]').forEach(b => b.classList.toggle('on', (b.dataset.o === '1') === on));
+    d.querySelectorAll('[data-o]').forEach(b => b.onclick = () => { on = b.dataset.o === '1'; paint(); }); paint();
+    const close = v => { d.remove(); res(v); };
+    d.querySelector('#mc').onclick = () => close(null);
+    d.querySelector('#mo').onclick = () => close({ on, t: d.querySelector('#rt').value || '08:00' });
+    d.onclick = e => { if (e.target === d) close(null); };
+  });
+}
+
+/* ---------- study timer (Pomodoro), study log, graph, monthly PDF ---------- */
+let studyLog = {}, dd = false;
+let tset = { focus: 25, brk: 5, subj: '', auto: true, n: 0, nd: '' };
+let tm = { ph: 'idle' };
+try { tset = Object.assign(tset, JSON.parse(localStorage.getItem('nn_tset') || '{}')); tm = JSON.parse(localStorage.getItem('nn_timer') || 'null') || tm; } catch {}
+const saveSet = () => localStorage.setItem('nn_tset', JSON.stringify(tset));
+const saveTm = () => localStorage.setItem('nn_timer', JSON.stringify(tm));
+const saveLog = () => api('saveLog', { log: studyLog }).catch(e => toast('Save failed: ' + e.message));
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const mmss = s => `${pad(Math.floor(s / 60))}:${pad(s % 60)}`;
+const hm = m => { const h = Math.floor(m / 60), r = m % 60; return h ? `${h}h${r ? ' ' + r + 'm' : ''}` : `${r}m`; };
+const goal = () => Number(localStorage.getItem('nn_goal')) || 6;
+const dayMin = d => (studyLog[d] || []).reduce((t, r) => t + (r.a || 0) + (r.m || 0), 0);
+const sumKey = (rows, k) => rows.reduce((t, r) => t + (r[k] || 0), 0);
+const leftSec = () => tm.ph === 'run' ? Math.max(0, Math.ceil((tm.endAt - Date.now()) / 1000)) : tm.ph === 'pause' ? tm.left : 0;
+const buzz = () => { try { navigator.vibrate && navigator.vibrate([200, 100, 200]); } catch {} };
+const tabsHtml = cur => `<div class="tabs2">${[['r', 'Revision'], ['t', 'Timer'], ['l', 'Log']].map(([k, l]) => `<button class="tab ${k === cur ? 'on' : ''}" data-a="tab" data-id="${k}">${l}</button>`).join('')}</div>`;
+
+function addLog(d, subj, min, key) {
+  const s = findSubject(subj), k = subj || 'gen', rows = studyLog[d] || (studyLog[d] = []);
+  let r = rows.find(x => x.k === k); if (!r) { r = { k, s: s ? s.name : 'General', a: 0, m: 0 }; rows.push(r); }
+  r[key] = (r[key] || 0) + min; saveLog();
+}
+async function tmNotify(on) {
+  const ln = LN(); if (!IS_APP || !ln) return;
+  try {
+    await ln.cancel({ notifications: [{ id: 9001 }] });
+    if (on) await ln.schedule({ notifications: [{ id: 9001, title: tm.mode === 'focus' ? 'Focus done' : 'Break over', body: tm.mode === 'focus' ? 'Nice work. Time for a break.' : 'Ready for the next session?', schedule: { at: new Date(tm.endAt), allowWhileIdle: true } }] });
+  } catch (e) {}
+}
+function startTm(mode, minutes, long) {
+  tm = { ph: 'run', mode, long: !!long, dur: minutes * 60, endAt: Date.now() + minutes * 60000, subj: tset.subj };
+  saveTm(); tmNotify(true);
+}
+async function finishTm(done) {
+  const mode = tm.mode, subj = tm.subj, elapsed = tm.dur - (done ? 0 : leftSec());
+  tm = { ph: 'idle' }; saveTm(); tmNotify(false);
+  if (mode === 'focus') {
+    const min = Math.round(elapsed / 60);
+    if (min >= 1) { addLog(today(), subj, min, 'a'); toast(`+${min} min logged`); } else toast('Under 1 min, not logged');
+    if (done) {
+      buzz();
+      if (tset.nd !== today()) { tset.nd = today(); tset.n = 0; }
+      tset.n++; saveSet();
+      if (tset.auto) { const long = tset.n % 4 === 0; startTm('break', long ? 15 : tset.brk, long); }
+    }
+  } else if (done) { buzz(); toast('Break over'); }
+  if (location.hash === '#/r/t') viewTimer();
+}
+function tick() {
+  if (tm.ph !== 'run') return;
+  if (Date.now() >= tm.endAt) return finishTm(true);
+  if (location.hash === '#/r/t') paintDial();
+}
+setInterval(tick, 500);
+document.addEventListener('visibilitychange', tick);
+
+const pt = (a, r) => [(110 + r * Math.sin(a * Math.PI / 180)).toFixed(2), (110 - r * Math.cos(a * Math.PI / 180)).toFixed(2)];
+const wedge = a => a >= 359.9 ? '<circle cx="110" cy="110" r="88"/>' : a <= 0 ? '' : `<path d="M110 110 L110 22 A88 88 0 ${a > 180 ? 1 : 0} 1 ${pt(a, 88).join(' ')} Z"/>`;
+function dialSvg() {
+  const run = tm.ph !== 'idle', brk = run && tm.mode === 'break';
+  const total = run ? tm.dur : tset.focus * 60, left = run ? leftSec() : total;
+  const plan = total / 3600 * 360, done = run ? (total - left) / 3600 * 360 : 0, col = brk ? '#9a9a9a' : '#d71921';
+  let ticks = '';
+  for (let i = 0; i < 12; i++) { const p1 = pt(i * 30, 88), p2 = pt(i * 30, i % 3 ? 83 : 78); ticks += `<line x1="${p1[0]}" y1="${p1[1]}" x2="${p2[0]}" y2="${p2[1]}" stroke="#555" stroke-width="${i % 3 ? 1 : 2}"/>`; }
+  const nums = [['15', 90], ['30', 180], ['45', 270]].map(([t, a]) => { const p = pt(a, 66); return `<text x="${p[0]}" y="${(+p[1] + 3).toFixed(2)}" text-anchor="middle" fill="#666" font-family="Space Mono,monospace" font-size="8">${t}</text>`; }).join('');
+  const hand = pt(done, 88);
+  return `<svg id="dialsvg" viewBox="0 0 220 220" style="width:100%;max-width:300px;touch-action:none;display:block;margin:0 auto">
+    <defs><pattern id="hh" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="${col}" stroke-width="2.4"/></pattern></defs>
+    <circle cx="110" cy="110" r="96" fill="#0b0b0b" stroke="#2a2a2a"/>
+    <g fill="#ffffff14">${wedge(plan)}</g><g fill="url(#hh)">${wedge(done)}</g>${ticks}${nums}
+    ${done > 0 ? `<line x1="110" y1="110" x2="${hand[0]}" y2="${hand[1]}" stroke="${col}" stroke-width="2"/>` : ''}
+    <line x1="110" y1="110" x2="110" y2="22" stroke="#f2f2f2" stroke-width="2.5"/><circle cx="110" cy="110" r="3.5" fill="#f2f2f2"/>
+    <rect x="60" y="130" width="100" height="46" rx="12" fill="#0b0b0b" opacity=".88"/>
+    <text x="110" y="156" text-anchor="middle" fill="#f2f2f2" font-family="Doto,Space Mono,monospace" font-weight="900" font-size="26">${mmss(left)}</text>
+    <text x="110" y="170" text-anchor="middle" fill="#8a8a8a" font-family="Space Mono,monospace" font-size="7" letter-spacing="1.2">${run ? (brk ? (tm.long ? 'LONG BREAK' : 'BREAK') : 'FOCUS') + (tm.ph === 'pause' ? ' · PAUSED' : '') : 'DRAG TO SET'}</text></svg>`;
+}
+function paintDial() { const el = document.getElementById('dial'); if (el) el.innerHTML = dialSvg(); }
+function setDial(e) {
+  const svg = document.getElementById('dialsvg'); if (!svg) return;
+  const r = svg.getBoundingClientRect(); let a = Math.atan2(e.clientX - (r.left + r.width / 2), -(e.clientY - (r.top + r.height / 2))) * 180 / Math.PI;
+  if (a < 0) a += 360;
+  tset.focus = clamp(Math.round(a / 6) || 60, 1, 60); paintDial();
+  const fl = document.getElementById('fl'); if (fl) fl.textContent = tset.focus + ' min';
+}
+document.addEventListener('pointerdown', e => { if (tm.ph === 'idle' && e.target.closest && e.target.closest('#dialsvg')) { dd = true; setDial(e); } });
+window.addEventListener('pointermove', e => { if (dd) setDial(e); });
+window.addEventListener('pointerup', () => { if (dd) { dd = false; saveSet(); } });
+
+function viewTimer() {
+  const run = tm.ph !== 'idle', cur = run ? tm.subj : tset.subj;
+  const opts = '<option value="">General</option>' + tree.subjects.map(s => `<option value="${s.id}" ${cur === s.id ? 'selected' : ''}>${esc(s.name)}</option>`).join('') + '<option value="__add">+ Add subject</option>';
+  const today_ = studyLog[today()] || [], sess = tset.nd === today() ? tset.n : 0;
+  const ctl = !run ? `
+    <div class="seg" style="justify-content:center">${[15, 25, 45, 60].map(m => `<button class="btn ghost mini ${tset.focus === m ? 'on' : ''}" data-a="tmSet" data-id="${m}">${m}</button>`).join('')}</div>
+    <div class="trow"><span class="label">Focus</span><span><button class="btn ghost mini" data-a="tmFocus" data-id="-5">-5</button> <b id="fl">${tset.focus} min</b> <button class="btn ghost mini" data-a="tmFocus" data-id="5">+5</button></span></div>
+    <div class="trow"><span class="label">Break</span><span><button class="btn ghost mini" data-a="tmBrk" data-id="-1">-1</button> <b>${tset.brk} min</b> <button class="btn ghost mini" data-a="tmBrk" data-id="1">+1</button></span></div>
+    <div class="trow"><span class="label">Auto break (long every 4th)</span><button class="btn ghost mini ${tset.auto ? 'on' : ''}" data-a="tmAuto">${tset.auto ? 'On' : 'Off'}</button></div>
+    <button class="btn red" style="width:100%;margin-top:14px;padding:15px" data-a="tmStart">Start focus</button>`
+    : `<div class="row" style="justify-content:center;margin-top:14px">
+      ${tm.ph === 'run' ? '<button class="btn ghost" data-a="tmPause">Pause</button>' : '<button class="btn red" data-a="tmResume">Resume</button>'}
+      <button class="btn" data-a="tmStop">${tm.mode === 'focus' ? 'Stop &amp; log' : 'Skip break'}</button></div>`;
+  app.innerHTML = `<div class="wrap">
+    <button class="back" data-a="home">← Home</button><h1 class="t">Timer</h1>${tabsHtml('t')}
+    <div id="dial">${dialSvg()}</div>
+    <select id="tsub" ${run ? 'disabled' : ''}>${opts}</select>
+    ${ctl}
+    <div class="label" style="margin-top:18px;text-align:center">Today · ${hm(dayMin(today()))} · ${sess} session${sess === 1 ? '' : 's'}</div></div>`;
+}
+app.addEventListener('change', async e => {
+  if (e.target.id !== 'tsub') return;
+  if (e.target.value === '__add') {
+    const n = await ask({ title: 'New subject', ok: 'Add' });
+    if (n) { const s = { id: uid(), name: n, topics: [] }; tree.subjects.push(s); tset.subj = s.id; await persist(); }
+    saveSet(); return viewTimer();
+  }
+  tset.subj = e.target.value; saveSet();
+});
+
+/* ---- log tab ---- */
+let lg = { m: new Date(), sel: today() }, gr = { mode: 'month', d: new Date() };
+function askTime(ds) {
+  return new Promise(res => {
+    const d = document.createElement('div'); d.className = 'modal';
+    d.innerHTML = `<div class="box"><h3>Add study time</h3><p>${fmt(ds)} · time you forgot to log</p>
+      <select id="ts"><option value="">General</option>${tree.subjects.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('')}</select>
+      <div class="two"><input id="th" type="number" min="0" max="24" placeholder="Hours"><input id="tn" type="number" min="0" max="59" placeholder="Minutes"></div>
+      <div class="row"><button class="btn ghost" id="mc">Cancel</button><button class="btn" id="mo">Add</button></div></div>`;
+    document.body.appendChild(d);
+    const close = v => { d.remove(); res(v); };
+    d.querySelector('#mc').onclick = () => close(null);
+    d.querySelector('#mo').onclick = () => { const min = (+d.querySelector('#th').value || 0) * 60 + (+d.querySelector('#tn').value || 0); close(min > 0 ? { k: d.querySelector('#ts').value, min } : null); };
+    d.onclick = e => { if (e.target === d) close(null); };
+  });
+}
+function graphHtml() {
+  const g = goal(), rows = []; let title, unit;
+  if (gr.mode === 'month') {
+    const y = gr.d.getFullYear(), mo = gr.d.getMonth(), n = new Date(y, mo + 1, 0).getDate();
+    for (let d = 1; d <= n; d++) rows.push({ l: pad(d), v: dayMin(`${y}-${pad(mo + 1)}-${pad(d)}`) / 60 });
+    title = gr.d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }); unit = 'hours per day';
+  } else {
+    const y = gr.d.getFullYear(), now = new Date();
+    for (let mo = 0; mo < 12; mo++) {
+      const n = new Date(y, mo + 1, 0).getDate(); let tot = 0;
+      for (let d = 1; d <= n; d++) tot += dayMin(`${y}-${pad(mo + 1)}-${pad(d)}`);
+      const passed = y < now.getFullYear() || (y === now.getFullYear() && mo < now.getMonth()) ? n : y === now.getFullYear() && mo === now.getMonth() ? now.getDate() : 0;
+      rows.push({ l: new Date(y, mo, 1).toLocaleDateString('en-GB', { month: 'short' }), v: passed ? tot / passed / 60 : 0 });
+    }
+    title = String(y); unit = 'average hours per day';
+  }
+  const mx = Math.max(g * 1.5, ...rows.map(r => r.v)), p = g / mx;
+  return `<div class="cal-h"><button class="ic" data-a="grPrev">${ic('l')}</button><span>${title}</span><button class="ic" data-a="grNext">${ic('r')}</button></div>
+    <div class="seg" style="justify-content:center;margin:10px 0"><button class="btn ghost mini ${gr.mode === 'month' ? 'on' : ''}" data-a="grMode" data-id="month">Month</button><button class="btn ghost mini ${gr.mode === 'year' ? 'on' : ''}" data-a="grMode" data-id="year">Year</button></div>
+    <div class="label" style="margin-bottom:8px">${unit} · <span class="red" data-a="goalSet" style="cursor:pointer">goal ${g}h</span></div>
+    <div class="bars"><div class="base" style="left:calc(34px + (100% - 92px) * ${p.toFixed(4)})"></div>
+    ${rows.map(r => `<div class="br"><span class="bd">${r.l}</span><div class="bt"><i style="width:${(r.v / mx * 100).toFixed(1)}%"></i></div><span class="bv">${r.v ? r.v.toFixed(1) : ''}</span></div>`).join('')}</div>`;
+}
+function viewLog() {
+  const td = today(), y = lg.m.getFullYear(), mo = lg.m.getMonth();
+  const first = new Date(y, mo, 1).getDay(), days = new Date(y, mo + 1, 0).getDate();
+  let cells = ['su', 'mo', 'tu', 'we', 'th', 'fr', 'sa'].map(d => `<em>${d}</em>`).join('') + '<i></i>'.repeat(first);
+  for (let d = 1; d <= days; d++) {
+    const ds = `${y}-${pad(mo + 1)}-${pad(d)}`, t = dayMin(ds);
+    cells += `<button class="day ${ds === td ? 'today' : ''} ${ds === lg.sel ? 'sel' : ''}" data-a="logDay" data-id="${ds}">${d}${t ? `<span class="hh">${(t / 60).toFixed(1)}</span>` : ''}</button>`;
+  }
+  const rows = studyLog[lg.sel] || [], A = sumKey(rows, 'a'), M = sumKey(rows, 'm'), tr = studyLog[td] || [];
+  const pdfD = gr.mode === 'month' ? gr.d : lg.m;
+  app.innerHTML = `<div class="wrap">
+    <button class="back" data-a="home">← Home</button><h1 class="t">Log</h1>${tabsHtml('l')}
+    <div class="card"><div class="label">Today</div><div class="rev"><span class="big" style="font-size:30px">${hm(dayMin(td))}</span></div>
+      <div class="label">App ${hm(sumKey(tr, 'a'))} + Manual ${hm(sumKey(tr, 'm'))}</div></div>
+    <div class="cal-h"><button class="ic" data-a="logPrev">${ic('l')}</button><span>${lg.m.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}</span><button class="ic" data-a="logNext">${ic('r')}</button></div>
+    <div class="cal">${cells}</div>
+    <div class="label" style="margin-bottom:6px">${fmt(lg.sel)} · ${hm(A + M)} = App ${hm(A)} + Manual ${hm(M)}</div>
+    <div class="card" style="padding:6px 14px">${rows.map(r => `<div class="sub"><div class="nm">${esc(r.s)}<small><span>App ${hm(r.a || 0)}</span><span>Manual ${hm(r.m || 0)}</span></small></div><button class="ic" data-a="editLog" data-id="${lg.sel}" data-k="${r.k}">${ic('edit')}</button></div>`).join('') || '<div class="empty">NOTHING LOGGED</div>'}</div>
+    <button class="add" data-a="addTime" data-id="${lg.sel}">+ Add time for this date</button>
+    <div style="margin-top:26px">${graphHtml()}</div>
+    <button class="add" style="margin-top:20px" data-a="pdfMonth">${ic('dl')}<span style="display:inline-block;margin-left:8px">Download PDF · ${pdfD.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}</span></button></div>`;
+}
+
+/* ---- monthly PDF (built by hand, works offline) ---- */
+const pdfEsc = s => String(s).replace(/[^\x20-\x7E]/g, '?').replace(/([\\()])/g, '\\$1');
+function buildPdf(date) {
+  const y = date.getFullYear(), mo = date.getMonth(), n = new Date(y, mo + 1, 0).getDate(), g = goal();
+  const vals = [], bySub = {}; let tot = 0, hit = 0, act = 0;
+  for (let d = 1; d <= n; d++) {
+    const ds = `${y}-${pad(mo + 1)}-${pad(d)}`, m = dayMin(ds); vals.push(m); tot += m; if (m) act++; if (m >= g * 60) hit++;
+    (studyLog[ds] || []).forEach(r => { bySub[r.s] = (bySub[r.s] || 0) + (r.a || 0) + (r.m || 0); });
+  }
+  const sc = Math.max(g * 1.5, Math.max(...vals) / 60), X0 = 110, W = 360;
+  const txt = (s, x, yy, sz = 10, b = 0) => `BT /${b ? 'F2' : 'F1'} ${sz} Tf ${x} ${yy} Td (${pdfEsc(s)}) Tj ET\n`;
+  let c = txt('Study report - ' + date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }), 40, 800, 18, 1);
+  c += txt(`Total ${hm(tot)}  |  Days studied ${act}  |  Average per day ${hm(Math.round(tot / n))}  |  Goal ${g}h reached on ${hit} days`, 40, 776, 9);
+  vals.forEach((m, i) => {
+    const yy = 740 - i * 17, wd = new Date(y, mo, i + 1).toLocaleDateString('en-GB', { weekday: 'short' });
+    c += txt(`${pad(i + 1)} ${wd}`, 40, yy, 9);
+    c += `0.93 0.93 0.93 rg ${X0} ${yy - 3} ${W} 11 re f\n0.1 0.1 0.1 rg ${X0} ${yy - 3} ${(m / 60 / sc * W).toFixed(1)} 11 re f\n`;
+    c += txt(m ? hm(m) : '-', X0 + W + 10, yy, 9);
+  });
+  const bx = (X0 + g / sc * W).toFixed(1);
+  c += `0.84 0.1 0.13 RG 1.2 w ${bx} 756 m ${bx} ${740 - (n - 1) * 17 - 6} l S\n` + txt(`Goal ${g}h`, bx - 16, 760, 8);
+  let sy = 740 - (n - 1) * 17 - 40;
+  c += txt('By subject', 40, sy, 11, 1);
+  Object.entries(bySub).sort((a, b) => b[1] - a[1]).slice(0, 7).forEach(([s, m], i) => { c += txt(`${s}: ${hm(m)}`, 40, sy - 16 - i * 14, 9); });
+  const objs = ['<< /Type /Catalog /Pages 2 0 R >>', '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+    '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>',
+    '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>',
+    '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>',
+    `<< /Length ${c.length} >>\nstream\n${c}endstream`];
+  let out = '%PDF-1.4\n'; const offs = [];
+  objs.forEach((o, i) => { offs.push(out.length); out += `${i + 1} 0 obj\n${o}\nendobj\n`; });
+  const xr = out.length;
+  out += `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n` + offs.map(o => String(o).padStart(10, '0') + ' 00000 n \n').join('') + `trailer\n<< /Size ${objs.length + 1} /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`;
+  return new Blob([out], { type: 'application/pdf' });
+}
+
 /* ---------- actions ---------- */
 const actions = {
+  tab: id => go(id === 'r' ? '/r' : '/r/' + id),
+  tmSet: id => { tset.focus = +id; saveSet(); viewTimer(); },
+  tmFocus: id => { tset.focus = clamp(tset.focus + Number(id), 1, 60); saveSet(); viewTimer(); },
+  tmBrk: id => { tset.brk = clamp(tset.brk + Number(id), 1, 30); saveSet(); viewTimer(); },
+  tmAuto: () => { tset.auto = !tset.auto; saveSet(); viewTimer(); },
+  async tmStart() {
+    const ln = LN();
+    if (IS_APP && ln) { try { const p = await ln.checkPermissions(); if (p.display !== 'granted') await ln.requestPermissions(); } catch (e) {} }
+    startTm('focus', tset.focus); viewTimer();
+  },
+  tmPause: () => { tm.left = leftSec(); tm.ph = 'pause'; saveTm(); tmNotify(false); viewTimer(); },
+  tmResume: () => { tm.endAt = Date.now() + tm.left * 1000; tm.ph = 'run'; saveTm(); tmNotify(true); viewTimer(); },
+  tmStop: () => finishTm(false),
+  logDay: id => { lg.sel = id; viewLog(); },
+  logPrev: () => { lg.m = new Date(lg.m.getFullYear(), lg.m.getMonth() - 1, 1); viewLog(); },
+  logNext: () => { lg.m = new Date(lg.m.getFullYear(), lg.m.getMonth() + 1, 1); viewLog(); },
+  grPrev: () => { gr.d = gr.mode === 'month' ? new Date(gr.d.getFullYear(), gr.d.getMonth() - 1, 1) : new Date(gr.d.getFullYear() - 1, gr.d.getMonth(), 1); viewLog(); },
+  grNext: () => { gr.d = gr.mode === 'month' ? new Date(gr.d.getFullYear(), gr.d.getMonth() + 1, 1) : new Date(gr.d.getFullYear() + 1, gr.d.getMonth(), 1); viewLog(); },
+  grMode: id => { gr.mode = id; viewLog(); },
+  async goalSet() {
+    const v = await ask({ title: 'Daily goal (hours)', value: String(goal()), type: 'number', ok: 'Save' });
+    if (v && Number(v) > 0) { localStorage.setItem('nn_goal', String(Number(v))); viewLog(); }
+  },
+  async addTime(id) {
+    const v = await askTime(id); if (!v) return;
+    addLog(id, v.k, v.min, 'm'); toast('Added ' + hm(v.min)); viewLog();
+  },
+  async editLog(id, d) {
+    const rows = studyLog[id] || [], r = rows.find(x => x.k === d.k); if (!r) return;
+    const v = await ask({ title: 'Manual time (minutes)', value: String(r.m || 0), type: 'number', ok: 'Save' }); if (v === null) return;
+    r.m = Math.max(0, Math.round(Number(v) || 0));
+    if (!r.a && !r.m) studyLog[id] = rows.filter(x => x !== r);
+    if (!studyLog[id].length) delete studyLog[id];
+    await saveLog(); viewLog();
+  },
+  pdfMonth: () => saveFile(buildPdf(gr.mode === 'month' ? gr.d : lg.m), 'study-' + ymd(gr.mode === 'month' ? gr.d : lg.m).slice(0, 7) + '.pdf'),
+  async remSet() {
+    const v = await askReminder(); if (!v) return;
+    if (v.on && IS_APP) {
+      const ln = LN(); if (!ln) return toast('Install the newest APK to use reminders');
+      const p = await ln.requestPermissions();
+      if (p.display !== 'granted') return toast('Allow notifications in phone settings');
+    }
+    rem = v; localStorage.setItem('nn_rem', JSON.stringify(v));
+    if (IS_APP) { await scheduleReminders(); toast(v.on ? 'Reminder set for ' + v.t : 'Reminder off'); }
+    else toast('Reminders work in the Android app');
+    route();
+  },
   noop: () => {},
   restore() {
     const inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.json,application/json';
@@ -663,9 +992,9 @@ const actions = {
       if (!await ask({ title: 'Restore this backup?', input: false, ok: 'Restore', danger: true, msg: 'This replaces your current subjects, pages and prompts with the backup.' })) return;
       toast('Restoring…');
       try {
-        tree = b.tree; normTree(); prompts = b.prompts || [];
+        tree = b.tree; normTree(); prompts = b.prompts || []; if (b.log) studyLog = b.log;
         for (const [id, html] of Object.entries(b.pages || {})) { const v = Date.now(), hit = findSub(id); if (hit) hit.x.v = v; await api('savePage', { id, html, v }); }
-        await api('saveTree', { tree }); await api('savePrompts', { prompts }); toast('Restored'); route();
+        await api('saveTree', { tree }); await api('savePrompts', { prompts }); if (b.log) await api('saveLog', { log: studyLog }); toast('Restored'); route();
       } catch (e) { toast('Failed: ' + e.message); }
     };
     inp.click();
@@ -710,7 +1039,7 @@ const actions = {
     toast('Preparing backup…');
     try {
       const pages = await fetchPages(tree.subjects.flatMap(s => s.topics.flatMap(t => t.subs)));
-      saveFile(new Blob([JSON.stringify({ exported: new Date().toISOString(), tree, pages, prompts }, null, 1)], { type: 'application/json' }), 'notes-backup-' + today() + '.json');
+      saveFile(new Blob([JSON.stringify({ exported: new Date().toISOString(), tree, pages, prompts, log: studyLog }, null, 1)], { type: 'application/json' }), 'notes-backup-' + today() + '.json');
     } catch (e) { toast('Failed: ' + e.message); }
   },
   home: () => go('/'),
@@ -806,7 +1135,7 @@ function route() {
   const [, k, id] = (location.hash.slice(1) || '/').split('/');
   flush(); cur = null;
   window.scrollTo(0, 0);
-  if (k === 'r') return viewRev();
+  if (k === 'r') return id === 't' ? viewTimer() : id === 'l' ? viewLog() : viewRev();
   if (k === 's') return viewSubject(id);
   if (k === 'e') return viewEditor(id);
   if (k === 'v') return viewPage(id);
@@ -815,7 +1144,7 @@ function route() {
 window.addEventListener('hashchange', route);
 
 async function boot() {
-  try { buildFontCss(); await flushOutbox(); const [t, p] = await Promise.all([api('getTree'), api('getPrompts')]); tree = t.tree; prompts = p.prompts || []; normTree(); route(); prefetchAll(); if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); }
+  try { buildFontCss(); await flushOutbox(); const [t, p, l] = await Promise.all([api('getTree'), api('getPrompts'), api('getLog')]); tree = t.tree; prompts = p.prompts || []; studyLog = l.log || {}; normTree(); route(); prefetchAll(); scheduleSoon(); tick(); if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); }
   catch (e) {
     if (e.message === 'Offline') { app.innerHTML = `<div class="wrap"><div class="empty">OFFLINE AND NOTHING SAVED YET<br>OPEN ONCE WITH INTERNET<br><br><button class="btn ghost" onclick="boot()">Retry</button></div></div>`; return; }
     if (e.auth) { localStorage.removeItem('nn_pass'); idbSet('auth', {}); pass = ''; return viewLogin('Wrong password'); }
@@ -828,7 +1157,7 @@ document.addEventListener('visibilitychange', async () => {
   if (document.visibilityState !== 'visible' || !pass) return;
   const k = (location.hash.split('/')[1] || '');
   if (k === 'e' || k === 'v') return;
-  try { await flushOutbox(); tree = (await api('getTree')).tree; normTree(); route(); prefetchAll(); } catch {}
+  try { await flushOutbox(); tree = (await api('getTree')).tree; studyLog = (await api('getLog')).log || {}; normTree(); route(); prefetchAll(); } catch {}
 });
 
 addEventListener('online', async () => { await flushOutbox(); try { tree = (await api('getTree')).tree; normTree(); } catch {} prefetchAll(); });
