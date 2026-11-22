@@ -7,6 +7,7 @@ const PASSWORD = process.env.APP_PASSWORD;
 
 const TREE_KEY = 'notes:tree';
 const PROMPTS_KEY = 'notes:prompts';
+const LOG_KEY = 'notes:studylog';
 const pageKey = id => 'notes:page:' + id;
 const progKey = id => 'notes:progress:' + id;
 const validId = id => typeof id === 'string' && /^[a-z0-9_-]{1,40}$/i.test(id);
@@ -71,6 +72,19 @@ module.exports = async (req, res) => {
         const str = JSON.stringify(body.prompts);
         if (str.length > 400_000) return res.status(413).json({ error: 'Too large' });
         await redis(['SET', PROMPTS_KEY, str]);
+        return res.json({ ok: true });
+      }
+
+      case 'getLog': {
+        const raw = await redis(['GET', LOG_KEY]);
+        return res.json({ log: raw ? JSON.parse(raw) : {} });
+      }
+
+      case 'saveLog': {
+        if (!body.log || typeof body.log !== 'object' || Array.isArray(body.log)) return res.status(400).json({ error: 'Bad log' });
+        const str = JSON.stringify(body.log);
+        if (str.length > 900_000) return res.status(413).json({ error: 'Log too large' });
+        await redis(['SET', LOG_KEY, str]);
         return res.json({ ok: true });
       }
 
