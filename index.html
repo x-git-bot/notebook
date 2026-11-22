@@ -1144,7 +1144,7 @@ function route() {
 window.addEventListener('hashchange', route);
 
 async function boot() {
-  try { buildFontCss(); await flushOutbox(); const [t, p, l] = await Promise.all([api('getTree'), api('getPrompts'), api('getLog')]); tree = t.tree; prompts = p.prompts || []; studyLog = l.log || {}; normTree(); route(); prefetchAll(); scheduleSoon(); tick(); if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); }
+  try { buildFontCss(); await flushOutbox(); const [t, p, l] = await Promise.all([api('getTree'), api('getPrompts'), api('getLog').catch(() => ({ log: studyLog }))]); tree = t.tree; prompts = p.prompts || []; studyLog = l.log || {}; normTree(); route(); prefetchAll(); scheduleSoon(); tick(); if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); }
   catch (e) {
     if (e.message === 'Offline') { app.innerHTML = `<div class="wrap"><div class="empty">OFFLINE AND NOTHING SAVED YET<br>OPEN ONCE WITH INTERNET<br><br><button class="btn ghost" onclick="boot()">Retry</button></div></div>`; return; }
     if (e.auth) { localStorage.removeItem('nn_pass'); idbSet('auth', {}); pass = ''; return viewLogin('Wrong password'); }
@@ -1157,7 +1157,7 @@ document.addEventListener('visibilitychange', async () => {
   if (document.visibilityState !== 'visible' || !pass) return;
   const k = (location.hash.split('/')[1] || '');
   if (k === 'e' || k === 'v') return;
-  try { await flushOutbox(); tree = (await api('getTree')).tree; studyLog = (await api('getLog')).log || {}; normTree(); route(); prefetchAll(); } catch {}
+  try { await flushOutbox(); tree = (await api('getTree')).tree; studyLog = (await api('getLog').catch(() => ({ log: studyLog }))).log || {}; normTree(); route(); prefetchAll(); } catch {}
 });
 
 addEventListener('online', async () => { await flushOutbox(); try { tree = (await api('getTree')).tree; normTree(); } catch {} prefetchAll(); });
