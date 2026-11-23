@@ -1,5 +1,5 @@
 // Offline-first shell: the app opens with no internet. Notes data is cached in IndexedDB by index.html.
-const CACHE = 'notes-shell-v11';
+const CACHE = 'notes-shell-v12';
 const SHELL = ['/', '/index.html', '/manifest.json', '/template.html', '/icons/icon-192.png', '/icons/icon-512.png'];
 const FONTS = /(^|\.)(fonts\.googleapis\.com|fonts\.gstatic\.com)$/;
 

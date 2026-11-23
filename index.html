@@ -13,12 +13,12 @@
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..500&family=Sora:wght@600..700&family=Space+Grotesk:wght@500..600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<style>:root{color-scheme:dark;--bg:#000;--s1:#0b0b0b;--s2:#121212;--in:#000;--line:#1c1c1c;--line2:#2b2b2b;--tx:#ececec;--mu:#7b7b7b;--faint:#3a3a3a;--ov:rgba(0,0,0,.72);--red:#d71921;
-  --head:'Sora','Space Grotesk',system-ui,sans-serif;--sub:'Space Grotesk',system-ui,sans-serif;
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..500&family=Sora:wght@600..700&family=Space+Grotesk:wght@500..600&family=Space+Mono:wght@400;700&family=Noto+Sans+Bengali:wght@400..600&display=swap" rel="stylesheet">
+<style>:root{color-scheme:dark;--bg:#000;--s1:#0b0b0b;--s2:#121212;--in:#000;--line:#1c1c1c;--line2:#2b2b2b;--tx:#ececec;--mu:#7b7b7b;--faint:#3a3a3a;--ov:rgba(0,0,0,.72);--red:#d71921;--green:#2fb36b;
+  --head:'Sora','Noto Sans Bengali','Space Grotesk',system-ui,sans-serif;--sub:'Space Grotesk','Noto Sans Bengali',system-ui,sans-serif;
   --mono:'Space Mono',ui-monospace,Menlo,Consolas,monospace;
-  --sans:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
-:root[data-theme=light]{color-scheme:light;--bg:#f5f5f2;--s1:#ffffff;--s2:#ffffff;--in:#f5f5f2;--line:#ebebe6;--line2:#d8d8d2;--tx:#121212;--mu:#6d6d68;--faint:#c4c4bd;--ov:rgba(20,20,18,.38)}
+  --sans:'Inter','Noto Sans Bengali',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+:root[data-theme=light]{color-scheme:light;--bg:#f5f5f2;--s1:#ffffff;--s2:#ffffff;--in:#f5f5f2;--line:#ebebe6;--line2:#d8d8d2;--tx:#121212;--mu:#6d6d68;--faint:#c4c4bd;--ov:rgba(20,20,18,.38);--green:#14804a}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{background:var(--bg);-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--sans);font-size:14px;line-height:1.5;min-height:100vh;min-height:100dvh;padding:env(safe-area-inset-top) 0 0;-webkit-font-smoothing:antialiased}
@@ -46,7 +46,7 @@ h1.t{font-family:var(--head);font-weight:700;font-size:22px;letter-spacing:-.02e
 .hero-n{font-family:var(--head);font-weight:700;font-size:26px;letter-spacing:-.02em;line-height:1.1;margin:8px 0 12px}
 .hero-n small{font-family:var(--mono);font-weight:400;font-size:10px;color:var(--mu);letter-spacing:.06em;margin-left:8px}
 .meter{height:4px;border-radius:2px;background:var(--line);overflow:hidden}
-.meter i{display:block;height:100%;background:var(--red);border-radius:2px}
+.meter i{display:block;height:100%;background:var(--red);border-radius:2px}.meter i.ok{background:var(--green)}
 .subj{display:flex;align-items:center;gap:4px;cursor:pointer;padding:10px 8px 10px 4px}
 .subj:active{background:var(--line)}
 .nm{flex:1;min-width:0;font-family:var(--sub);font-weight:600;font-size:15px;line-height:1.3;overflow-wrap:break-word}
@@ -57,9 +57,11 @@ h1.t{font-family:var(--head);font-weight:700;font-size:22px;letter-spacing:-.02e
 .sub{display:flex;align-items:center;gap:6px;padding:8px 0 8px 2px;border-top:1px solid var(--line);cursor:pointer}
 .sub .nm{font-weight:500;font-size:14px}
 .dot{display:block;width:9px;height:9px;border-radius:50%;border:1.5px solid var(--red);flex:none}
-.dot.st-revision{background:var(--red)}.dot.st-completed{background:var(--tx);border-color:var(--tx)}
+.dot{background:var(--red)}.dot.st-completed{background:var(--green);border-color:var(--green)}
 .chip{border:1px solid var(--line2);border-radius:999px;padding:1px 8px;color:var(--tx);font-size:10px}
-.chip.late{border-color:var(--red);color:var(--red)}
+.chip.late,.chip.no{border-color:var(--red);color:var(--red)}
+.chip.ok{border-color:var(--green);color:var(--green)}
+.okc{color:var(--green)}.noc{color:var(--red)}
 .add{display:block;width:100%;margin-top:8px;background:transparent;border:1px dashed var(--line2);color:var(--mu);border-radius:12px;padding:10px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase}
 .add:active{background:var(--line);color:var(--tx)}
 .back{background:none;border:0;color:var(--mu);font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:4px 0;margin-bottom:4px}
@@ -112,14 +114,15 @@ iframe.full.withnav{height:calc(100vh - 102px - env(safe-area-inset-top) - env(s
 .day{aspect-ratio:1;background:var(--s1);border:1px solid var(--line);border-radius:10px;color:var(--tx);position:relative;font-family:var(--mono);font-size:12px;padding:0}
 .day b{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:var(--red)}
 .day b.ok{background:var(--mu)}
-.day.today{border-color:var(--tx)}.day.sel{background:var(--tx);color:var(--bg)}
+.day.ok{border-color:var(--green)}.day.ok .hh{color:var(--green)}.day.no{border-color:var(--red)}.day.no .hh{color:var(--red)}
+.day.today{box-shadow:0 0 0 1px var(--tx)}.day.sel{background:var(--tx);color:var(--bg)}
 .day .hh{position:absolute;bottom:3px;left:0;right:0;font-size:8px;color:var(--mu);text-align:center}
-.day.sel .hh{color:var(--bg)}
+.day.sel .hh,.day.sel.ok .hh,.day.sel.no .hh{color:var(--bg)}
 .cal-h{display:flex;align-items:center;justify-content:space-between;font-family:var(--sub);font-weight:600;font-size:15px}
 .bars{position:relative}
 .br{display:grid;grid-template-columns:28px 1fr 46px;align-items:center;margin:2px 0;font-family:var(--mono);font-size:9px;color:var(--mu)}
 .bt{height:8px;background:var(--line);border-radius:4px;overflow:hidden}
-.bt i{display:block;height:100%;background:var(--tx);border-radius:4px}
+.bt i{display:block;height:100%;background:var(--red);border-radius:4px}.bt i.ok{background:var(--green)}
 .bv{text-align:right}
 .base{position:absolute;top:-3px;bottom:-3px;width:0;border-left:2px solid var(--red);z-index:2;pointer-events:none}
 .boot{font-family:var(--mono);color:var(--mu);text-align:center;padding:38vh 20px 0;letter-spacing:.1em;font-size:11px;line-height:1.7}
@@ -132,7 +135,7 @@ iframe.full.withnav{height:calc(100vh - 102px - env(safe-area-inset-top) - env(s
 </style>
 </head>
 <body>
-<div id="app"><div class="boot">LOADING… · build 11</div></div>
+<div id="app"><div class="boot">LOADING… · build 12</div></div>
 <nav id="nav"></nav>
 
 <script>
@@ -153,7 +156,7 @@ iframe.full.withnav{height:calc(100vh - 102px - env(safe-area-inset-top) - env(s
   }
   window.addEventListener('error', function (e) { fail('Error: ' + (e.message || 'unknown')); });
   window.addEventListener('unhandledrejection', function (e) { fail('Error: ' + ((e.reason && e.reason.message) || e.reason)); });
-  setTimeout(function () { fail('The app did not start (build 11).'); }, 6000);
+  setTimeout(function () { fail('The app did not start (build 12).'); }, 6000);
 })();
 </script>
 <script>
@@ -191,7 +194,7 @@ function tasks() {
 }
 
 /* ---- MCQ progress bridge: pages talk to the server through NP ---- */
-const HELPER = '<script>(function(){var s={},rs=[];window.NP={loaded:false,data:function(){return s},record:function(id,ok,p){var a=s[id]||(s[id]={c:0,w:0});ok?a.c++:a.w++;a.last=!!ok;a.p=p;a.t=Date.now();parent.postMessage({np:"rec",id:id,ok:!!ok,p:p},"*");return a},onReady:function(f){rs.push(f);if(NP.loaded)f()}};addEventListener("message",function(e){if(e.data&&e.data.np==="init"){s=e.data.data||{};if(e.data.theme){document.documentElement.setAttribute("data-theme",e.data.theme)}if(e.data.css){var st=document.createElement("style");st.textContent=e.data.css;(document.head||document.documentElement).appendChild(st)}NP.loaded=true;rs.forEach(function(f){f()})}});parent.postMessage({np:"hello"},"*")})()<\/script>';
+const HELPER = '<script>(function(){var s={},rs=[];window.NP={loaded:false,data:function(){return s},record:function(id,ok,p){var a=s[id]||(s[id]={c:0,w:0});ok?a.c++:a.w++;a.last=!!ok;a.p=p;a.t=Date.now();parent.postMessage({np:"rec",id:id,ok:!!ok,p:p},"*");return a},reset:function(){parent.postMessage({np:\"reset\"},\"*\")},onReady:function(f){rs.push(f);if(NP.loaded)f()}};addEventListener("message",function(e){if(e.data&&e.data.np==="init"){s=e.data.data||{};if(e.data.theme){document.documentElement.setAttribute("data-theme",e.data.theme)}if(e.data.css&&!NP._f){NP._f=1;var st=document.createElement("style");st.textContent=e.data.css;(document.head||document.documentElement).appendChild(st)}NP.loaded=true;rs.forEach(function(f){f()})}});parent.postMessage({np:"hello"},"*")})()<\/script>';
 const wrap = h => /<head[^>]*>/i.test(h) ? h.replace(/<head[^>]*>/i, m => m + HELPER) : HELPER + h;
 let cur = null, saveT = null, pending = null;
 function sums(p) { let c = 0, w = 0; for (const k in p) { c += p[k].c || 0; w += p[k].w || 0; } return { c, w }; }
@@ -216,6 +219,15 @@ window.addEventListener('message', e => {
   const m = e.data; if (!m || !m.np || !cur) return;
   const fr = document.getElementById(cur.frame); if (!fr || e.source !== fr.contentWindow) return;
   if (m.np === 'hello') return fr.contentWindow.postMessage({ np: 'init', data: cur.prog, css: fontCss, theme: resolvedTheme() }, '*');
+  if (m.np === 'reset') {
+    const c = cur; if (!c || !c.save) return;
+    ask({ title: 'Reset progress?', input: false, ok: 'Reset', danger: true, msg: 'Right and wrong history for this page will be cleared.' }).then(yes => {
+      if (!yes || cur !== c) return;
+      c.prog = {}; updStat(); idbSet('prog:' + c.id, { data: {} }); pending = c; clearTimeout(saveT); saveT = setTimeout(doSave, 150);
+      fr.contentWindow.postMessage({ np: 'init', data: {}, css: fontCss, theme: resolvedTheme() }, '*');
+    });
+    return;
+  }
   if (m.np === 'rec') {
     const a = cur.prog[m.id] || (cur.prog[m.id] = { c: 0, w: 0 });
     m.ok ? a.c++ : a.w++; a.last = !!m.ok; a.p = m.p; a.t = Date.now(); updStat();
@@ -375,10 +387,10 @@ function viewLogin(err = '') {
 function viewHome() {
   const td = today(), done = dayMin(td), g = goal(), pct = Math.min(100, Math.round(done / (g * 60) * 100)), running = tm.ph !== 'idle';
   const list = tree.subjects.map(s => {
-    const n = subIdsOfSubject(s).length, tc = s.topics.length;
+    const n = subIdsOfSubject(s).length, tc = s.topics.length, dn = s.topics.reduce((c, t) => c + doneN(t), 0);
     return `<div class="card subj drag-item" data-type="subject" data-a="openSubject" data-id="${s.id}">
       <button class="ic grip" data-a="noop">${ic('grip')}</button>
-      <div class="nm">${esc(s.name)}<small><span>${tc} topic${tc === 1 ? '' : 's'}</span><span>${n} sub topic${n === 1 ? '' : 's'}</span></small></div>
+      <div class="nm">${esc(s.name)}<small><span>${tc} topic${tc === 1 ? '' : 's'}</span><span>${n} sub topic${n === 1 ? '' : 's'}</span>${dn ? `<span class="okc">${dn} complete</span>` : ''}</small></div>
       <button class="ic" data-a="renSubject" data-id="${s.id}">${ic('edit')}</button>
       <button class="ic" data-a="delSubject" data-id="${s.id}">${ic('x')}</button></div>`;
   }).join('');
@@ -397,7 +409,7 @@ function viewHome() {
       <button class="ic" data-a="theme" title="Light / dark">${ic(resolvedTheme() === 'light' ? 'moon' : 'sun')}</button>
       <button class="ic" data-a="logout" title="Lock">${ic('power')}</button></div></div>
     <div class="card hero" data-a="nav" data-id="t"><div class="label">${when}</div>
-      <div class="hero-n">${hm(done)}<small>of ${g}h goal today</small></div><div class="meter"><i style="width:${pct}%"></i></div></div>
+      <div class="hero-n ${done >= g * 60 ? 'okc' : ''}">${hm(done)}<small>of ${g}h goal today</small></div><div class="meter"><i class="${done >= g * 60 ? 'ok' : ''}" style="width:${pct}%"></i></div></div>
     <div class="label" style="margin:20px 0 10px">Subjects</div>
     ${list ? `<div data-box="subject">${list}</div>` : `<div class="empty">NO SUBJECTS YET</div>`}
     <button class="add" data-a="addSubject">+ Add subject</button>
@@ -410,17 +422,19 @@ function viewHome() {
   setOff();
 }
 
-const stLabel = x => x.status === 'completed' ? 'Completed' : x.status === 'revision' ? 'Revision' + (x.date ? ' · ' + fmt(x.date) : '') : 'Not started';
+const stLabel = x => x.status === 'completed' ? 'Complete' : 'Incomplete';
+const doneN = t => t.subs.filter(x => x.status === 'completed').length;
+const topicDone = t => t.subs.length > 0 && doneN(t) === t.subs.length;
 
 function viewSubject(sid) {
   const s = findSubject(sid); if (!s) return go('/');
   const topics = s.topics.map(t => `<div class="card drag-item" data-type="topic" data-id="${t.id}">
-    <div class="topic-h"><button class="ic grip" data-a="noop">${ic('grip')}</button><button class="ic chev ${colSet.has(t.id) ? 'c' : ''}" data-a="toggleTopic" data-id="${t.id}">${ic('chev')}</button><div class="nm" data-a="toggleTopic" data-id="${t.id}">${esc(t.name)}<small>${t.subs.length} sub topic${t.subs.length === 1 ? '' : 's'}</small></div>
+    <div class="topic-h"><button class="ic grip" data-a="noop">${ic('grip')}</button><button class="ic chev ${colSet.has(t.id) ? 'c' : ''}" data-a="toggleTopic" data-id="${t.id}">${ic('chev')}</button><div class="nm" data-a="toggleTopic" data-id="${t.id}">${esc(t.name)}<small><span>${t.subs.length} sub topic${t.subs.length === 1 ? '' : 's'}</span><span class="chip ${topicDone(t) ? 'ok' : 'no'}" style="cursor:default">${topicDone(t) ? 'Complete' : 'Incomplete'} · ${doneN(t)}/${t.subs.length}</span></small></div>
       <button class="ic" data-a="renTopic" data-id="${t.id}">${ic('edit')}</button>
       <button class="ic" data-a="delTopic" data-id="${t.id}">${ic('x')}</button></div>
     <div class="subs" data-box="sub" ${colSet.has(t.id) ? 'style="display:none"' : ''}>${t.subs.map(x => `<div class="sub drag-item" data-type="sub" data-id="${x.id}" data-a="openSub">
       <button class="ic grip" data-a="noop">${ic('grip')}</button>
-      <span class="dot st-${x.status}"></span><div class="nm">${esc(x.name)}<small><span class="chip" data-a="setStatus" data-id="${x.id}">${stLabel(x)}</span>${x.stats && (x.stats.c + x.stats.w) ? `<span>Right ${x.stats.c} · Wrong ${x.stats.w}</span>` : ''}</small></div>
+      <span class="dot st-${x.status}"></span><div class="nm">${esc(x.name)}<small><span class="chip ${x.status === 'completed' ? 'ok' : 'no'}" data-a="setStatus" data-id="${x.id}">${stLabel(x)}</span>${x.stats && (x.stats.c + x.stats.w) ? `<span>Right ${x.stats.c} · Wrong ${x.stats.w}</span>` : ''}</small></div>
       <button class="ic" data-a="renSub" data-id="${x.id}">${ic('edit')}</button>
       <button class="ic" data-a="delSub" data-id="${x.id}">${ic('x')}</button></div>`).join('')}</div>
     <button class="add" data-a="addSub" data-id="${t.id}" ${colSet.has(t.id) ? 'style="display:none"' : ''}>+ Add sub topic</button></div>`).join('');
@@ -537,7 +551,7 @@ function viewRev() {
 /* ---------- prompts, status, export, drag ---------- */
 let prompts = [], noClick = 0;
 const savePrompts = () => api('savePrompts', { prompts }).catch(e => toast('Save failed: ' + e.message));
-const normTree = () => tree.subjects.forEach(s => s.topics.forEach(t => t.subs.forEach(x => { if (!x.status) x.status = x.date ? 'revision' : 'not_started'; })));
+const normTree = () => tree.subjects.forEach(s => s.topics.forEach(t => t.subs.forEach(x => { if (!x.status) x.status = 'incomplete'; })));
 
 function askForm(title, fields) {
   return new Promise(res => {
@@ -650,15 +664,15 @@ async function asyncReplace(str, re, fn) {
 /* Fonts are saved once on the phone and handed to every page, so notes show the Nothing fonts offline */
 async function buildFontCss() {
   const put = css => { fontCss = css; if (!document.getElementById('nnfonts')) { const s = document.createElement('style'); s.id = 'nnfonts'; s.textContent = css; document.head.appendChild(s); } };
-  const c = await idbGet('fontcss2'); if (c) return put(c);
+  const c = await idbGet('fontcss3'); if (c) return put(c);
   if (!navigator.onLine) return;
   try {
     const link = document.querySelector('link[href*="fonts.googleapis.com/css2"]'); if (!link) return;
     const css = await (await fetch(link.href)).text();
-    const blocks = [...css.matchAll(/\/\*\s*([\w-]+)\s*\*\/\s*(@font-face\s*\{[^}]*\})/g)].filter(m => m[1] === 'latin').map(m => m[2]);
+    const blocks = [...css.matchAll(/\/\*\s*([\w-]+)\s*\*\/\s*(@font-face\s*\{[^}]*\})/g)].filter(m => (m[1] === 'latin' && !/Noto Sans Bengali/.test(m[2])) || (m[1] === 'bengali' && /Noto Sans Bengali/.test(m[2]))).map(m => /Noto Sans Bengali/.test(m[2]) ? m[2].replace(/\}\s*$/, 'size-adjust:106%;}') : m[2]);
     let out = '';
     for (const b of blocks) out += (await asyncReplace(b, /url\((https:[^)]+)\)/g, async m => `url(${await dataUri(m[1])})`)) + '\n';
-    if (out) { await idbSet('fontcss2', out); put(out); }
+    if (out) { await idbSet('fontcss3', out); put(out); }
   } catch {}
 }
 /* Embed web images, scripts and stylesheets into the page so it works with no internet */
@@ -866,25 +880,33 @@ function graphHtml() {
     <div class="seg" style="justify-content:center;margin:10px 0"><button class="btn ghost mini ${gr.mode === 'month' ? 'on' : ''}" data-a="grMode" data-id="month">Month</button><button class="btn ghost mini ${gr.mode === 'year' ? 'on' : ''}" data-a="grMode" data-id="year">Year</button></div>
     <div class="label" style="margin-bottom:8px">${unit} · <span class="red" data-a="goalSet" style="cursor:pointer">goal ${g}h</span></div>
     <div class="bars"><div class="base" style="left:calc(28px + (100% - 74px) * ${p.toFixed(4)})"></div>
-    ${rows.map(r => `<div class="br"><span class="bd">${r.l}</span><div class="bt"><i style="width:${(r.v / mx * 100).toFixed(1)}%"></i></div><span class="bv">${r.v ? r.v.toFixed(1) : ''}</span></div>`).join('')}</div>`;
+    ${rows.map(r => `<div class="br"><span class="bd">${r.l}</span><div class="bt"><i class="${r.v >= g ? 'ok' : 'no'}" style="width:${(r.v / mx * 100).toFixed(1)}%"></i></div><span class="bv">${r.v ? r.v.toFixed(1) : ''}</span></div>`).join('')}</div>`;
+}
+const firstLogged = () => Object.keys(studyLog).filter(d => dayMin(d) > 0).sort()[0] || '';
+function dayTone(ds, fl) {
+  const m = dayMin(ds), td = today();
+  if (m >= goal() * 60) return 'ok';
+  if (m > 0) return 'no';
+  return fl && ds >= fl && ds < td ? 'no' : '';
 }
 function viewLog() {
+  const fl = firstLogged();
   const td = today(), y = lg.m.getFullYear(), mo = lg.m.getMonth();
   const first = new Date(y, mo, 1).getDay(), days = new Date(y, mo + 1, 0).getDate();
   let cells = ['su', 'mo', 'tu', 'we', 'th', 'fr', 'sa'].map(d => `<em>${d}</em>`).join('') + '<i></i>'.repeat(first);
   for (let d = 1; d <= days; d++) {
     const ds = `${y}-${pad(mo + 1)}-${pad(d)}`, t = dayMin(ds);
-    cells += `<button class="day ${ds === td ? 'today' : ''} ${ds === lg.sel ? 'sel' : ''}" data-a="logDay" data-id="${ds}">${d}${t ? `<span class="hh">${(t / 60).toFixed(1)}</span>` : ''}</button>`;
+    cells += `<button class="day ${dayTone(ds, fl)} ${ds === td ? 'today' : ''} ${ds === lg.sel ? 'sel' : ''}" data-a="logDay" data-id="${ds}">${d}${t ? `<span class="hh">${(t / 60).toFixed(1)}</span>` : ''}</button>`;
   }
   const rows = studyLog[lg.sel] || [], A = sumKey(rows, 'a'), M = sumKey(rows, 'm'), tr = studyLog[td] || [];
   const pdfD = gr.mode === 'month' ? gr.d : lg.m;
   app.innerHTML = `<div class="wrap">
     <h1 class="t">Log</h1>
-    <div class="card"><div class="label">Today</div><div class="rev"><span class="big" style="font-size:24px">${hm(dayMin(td))}</span></div>
-      <div class="label">App ${hm(sumKey(tr, 'a'))} + Manual ${hm(sumKey(tr, 'm'))}</div></div>
+    <div class="card"><div class="label">Today</div><div class="rev"><span class="big ${dayTone(td, fl) === 'ok' ? 'okc' : dayMin(td) ? 'noc' : ''}" style="font-size:24px">${hm(dayMin(td))}</span></div>
+      <div class="label">App ${hm(sumKey(tr, 'a'))} + Manual ${hm(sumKey(tr, 'm'))} · ideal ${goal()}h</div></div>
     <div class="cal-h"><button class="ic" data-a="logPrev">${ic('l')}</button><span>${lg.m.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}</span><button class="ic" data-a="logNext">${ic('r')}</button></div>
     <div class="cal">${cells}</div>
-    <div class="label" style="margin-bottom:6px">${fmt(lg.sel)} · ${hm(A + M)} = App ${hm(A)} + Manual ${hm(M)}</div>
+    <div class="label" style="margin-bottom:6px">${fmt(lg.sel)} · <span class="${dayTone(lg.sel, fl) === 'ok' ? 'okc' : dayTone(lg.sel, fl) === 'no' ? 'noc' : ''}">${hm(A + M)}</span> = App ${hm(A)} + Manual ${hm(M)}</div>
     <div class="card" style="padding:6px 14px">${rows.map(r => `<div class="sub"><div class="nm">${esc(r.s)}<small><span>App ${hm(r.a || 0)}</span><span>Manual ${hm(r.m || 0)}</span></small></div><button class="ic" data-a="editLog" data-id="${lg.sel}" data-k="${r.k}">${ic('edit')}</button></div>`).join('') || '<div class="empty">NOTHING LOGGED</div>'}</div>
     <button class="add" data-a="addTime" data-id="${lg.sel}">+ Add time for this date</button>
     <div style="margin-top:26px">${graphHtml()}</div>
@@ -907,11 +929,11 @@ function buildPdf(date) {
   vals.forEach((m, i) => {
     const yy = 740 - i * 17, wd = new Date(y, mo, i + 1).toLocaleDateString('en-GB', { weekday: 'short' });
     c += txt(`${pad(i + 1)} ${wd}`, 40, yy, 9);
-    c += `0.93 0.93 0.93 rg ${X0} ${yy - 3} ${W} 11 re f\n0.1 0.1 0.1 rg ${X0} ${yy - 3} ${(m / 60 / sc * W).toFixed(1)} 11 re f\n`;
+    c += `0.93 0.93 0.93 rg ${X0} ${yy - 3} ${W} 11 re f\n${m >= g * 60 ? '0.18 0.70 0.42' : '0.84 0.10 0.13'} rg ${X0} ${yy - 3} ${(m / 60 / sc * W).toFixed(1)} 11 re f\n`;
     c += txt(m ? hm(m) : '-', X0 + W + 10, yy, 9);
   });
   const bx = (X0 + g / sc * W).toFixed(1);
-  c += `0.84 0.1 0.13 RG 1.2 w ${bx} 756 m ${bx} ${740 - (n - 1) * 17 - 6} l S\n` + txt(`Goal ${g}h`, bx - 16, 760, 8);
+  c += `0.30 0.30 0.30 RG 1.2 w ${bx} 756 m ${bx} ${740 - (n - 1) * 17 - 6} l S\n` + txt(`Goal ${g}h`, bx - 16, 760, 8);
   let sy = 740 - (n - 1) * 17 - 40;
   c += txt('By subject', 40, sy, 11, 1);
   Object.entries(bySub).sort((a, b) => b[1] - a[1]).slice(0, 7).forEach(([s, m], i) => { c += txt(`${s}: ${hm(m)}`, 40, sy - 16 - i * 14, 9); });
@@ -1017,9 +1039,7 @@ const actions = {
   viewSub: id => go(viewPath(id)),
   editSub: id => go('/e/' + id),
   async setStatus(id) {
-    const { x } = findSub(id); const v = await askStatus(x); if (!v) return;
-    x.status = v.status;
-    if (v.status === 'revision') { x.date = v.date; x.done = (x.done || []).filter(d => INT.some(n => addDays(v.date, n) === d)); }
+    const { x } = findSub(id); x.status = x.status === 'completed' ? 'incomplete' : 'completed';
     await persist(); route();
   },
   async addPrompt() {
