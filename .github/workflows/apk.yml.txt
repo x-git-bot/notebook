@@ -77,8 +77,8 @@ jobs:
           test -f assets/logo.png
           npx @capacitor/assets generate \
             --android \
-            --iconBackgroundColor "#090a1c" \
-            --splashBackgroundColor "#090a1c"
+            --iconBackgroundColor "#0f1114" \
+            --splashBackgroundColor "#0f1114"
 
       - name: Keep signing key
         uses: actions/cache@v4
