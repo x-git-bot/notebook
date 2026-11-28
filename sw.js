@@ -1,6 +1,6 @@
 // Offline-first shell: the app opens with no internet. Notes data is cached in IndexedDB by index.html.
-const CACHE = 'notes-shell-v12';
-const SHELL = ['/', '/index.html', '/manifest.json', '/template.html', '/icons/icon-192.png', '/icons/icon-512.png'];
+const CACHE = 'notes-shell-v13';
+const SHELL = ['/', '/index.html', '/manifest.json', '/template.html', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/icon.svg', '/icons/apple-touch-icon.png'];
 const FONTS = /(^|\.)(fonts\.googleapis\.com|fonts\.gstatic\.com)$/;
 
 self.addEventListener('install', e => {
