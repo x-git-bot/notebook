@@ -44,7 +44,7 @@ jobs:
       - name: App icon and splash (optional)
         working-directory: android-app
         continue-on-error: true
-        run: npx @capacitor/assets generate --android --iconBackgroundColor "#090a1c" --splashBackgroundColor "#090a1c"
+        run: npx @capacitor/assets generate --android --iconBackgroundColor "#0f1114" --splashBackgroundColor "#0f1114"
 
       - name: Use the fixed signing key (so updates install over the old app)
         run: |
